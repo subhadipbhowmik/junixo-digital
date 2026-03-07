@@ -26,6 +26,6 @@ body {
 }
 
 /* reset css */
-li{
+li, li:hover{
   list-style-type: none;
 }
