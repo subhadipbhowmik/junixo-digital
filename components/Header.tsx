@@ -43,6 +43,7 @@ const megaMenus = {
           { label: "Marketing Automation", href: "/solutions/marketing-automation" },
           { label: "Analytics & Reporting", href: "/solutions/analytics" },
         ],
+        
       },
       {
         id: "seo",
@@ -539,12 +540,12 @@ export default function Header() {
             {/* ── Right side: Contact + CTA + Mobile ── */}
             <div className="flex items-center gap-2">
               {/* Desktop Contact */}
-              <a
-                href="/contact"
-                className="hidden lg:flex items-center text-[13.5px] font-semibold text-gray-600 hover:text-orange-500 transition-colors px-3 py-2"
-              >
-                Contact
-              </a>
+<a
+  href="/contact"
+  className="hidden lg:flex items-center gap-1.5 border border-orange-500 text-orange-500 text-xs font-bold px-4 py-[7px] rounded-full transition-all duration-150 hover:bg-orange-500 hover:text-white"
+>
+  Contact
+</a>
 
               {/* Desktop CTA */}
               <a
