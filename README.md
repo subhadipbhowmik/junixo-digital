@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Junixo Labs Website
 
-## Getting Started
+The **Junixo Labs website** represents our digital agency and the services we provide to businesses looking to grow online. It showcases our capabilities, our approach to solving digital problems, and how companies can work with us.
 
-First, run the development server:
+Junixo Labs focuses on building modern digital experiences that help brands establish a strong online presence and scale their operations through technology.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What Junixo Labs Does
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Junixo Labs helps businesses turn ideas into real digital products and platforms. We work with startups, entrepreneurs, and companies that want reliable technology solutions and professional digital presence.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Our goal is simple: build solutions that are **fast, scalable, and designed to grow with the business**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Services We Provide
 
-## Learn More
+### Web Development
 
-To learn more about Next.js, take a look at the following resources:
+We design and develop modern websites that are fast, responsive, and built to perform across all devices.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Custom Software
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+We create custom digital solutions tailored to specific business needs, from internal tools to large-scale platforms.
 
-## Deploy on Vercel
+### Digital Product Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+From idea to launch, we help turn concepts into real products that users can interact with and businesses can scale.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### UI / UX Design
+
+We design user interfaces and experiences that are simple, intuitive, and focused on usability.
+
+### Platform Development
+
+We build complete platforms such as web applications, SaaS products, and digital ecosystems.
+
+## Our Approach
+
+At Junixo Labs, we focus on solving real problems through technology. Every project starts with understanding the business goals and creating solutions that align with those goals.
+
+We believe in:
+
+- Clear communication
+- Practical solutions
+- Long-term scalability
+- High-quality digital products
+
+## Who We Work With
+
+Junixo Labs works with:
+
+- Startups launching new products
+- Businesses upgrading their digital presence
+- Entrepreneurs building platforms
+- Companies needing custom technology solutions
+
+## Purpose of This Website
+
+This website serves as the official online presence of Junixo Labs. It provides information about our services, our work, and how businesses can collaborate with us to build impactful digital products.
+
+---
+
+**Junixo Labs**
+Building digital solutions for modern businesses.
