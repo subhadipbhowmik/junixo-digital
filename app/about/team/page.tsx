@@ -178,10 +178,13 @@ function MemberModal({ member, onClose }: { member: TeamMember; onClose: () => v
 
       {/* Panel */}
       <div
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        style={{ animation: "modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
-      >
+  className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide"
+  style={{
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    animation: "modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
+  }}
+>
         {/* Cover / header — name lives here so it's always visible */}
         <div className="relative h-40 rounded-t-3xl overflow-hidden flex-shrink-0">
           <img src={member.coverImg} alt="" className="w-full h-full object-cover" />
