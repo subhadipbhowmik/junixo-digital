@@ -149,9 +149,7 @@ function HeroSection() {
               Growth-Driven{" "}
               <span className="text-orange-500 relative">
                 Digital Marketing
-                <svg className="absolute -bottom-1 left-0 w-full" height="6" viewBox="0 0 300 6" preserveAspectRatio="none">
-                  <path d="M0,3 Q75,0 150,3 Q225,6 300,3" stroke="#fb923c" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
-                </svg>
+               
               </span>
               {", "}SEO & Web Development
             </h1>

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import Cal, { getCalApi } from "@calcom/embed-react";
 
 /* ─── NAV DATA ─────────────────────────────────────────────── */
 const megaMenus = {
@@ -43,7 +44,6 @@ const megaMenus = {
           { label: "Marketing Automation", href: "/solutions/marketing-automation" },
           { label: "Analytics & Reporting", href: "/solutions/analytics" },
         ],
-        
       },
       {
         id: "seo",
@@ -192,9 +192,171 @@ const megaMenus = {
       { label: "Newsletter", href: "/resources/newsletter", icon: "📧" },
     ],
   },
+
+  /* ─── NEW: Tools mega menu ─────────────────────────────────── */
+  Tools: {
+    tabs: [
+      {
+        id: "seo-tools",
+        label: "SEO Tools",
+        columns: [
+          {
+            heading: "Analysis",
+            links: [
+              { label: "Website SEO Checker", href: "/tools/seo-checker" },
+              { label: "Backlink Analyzer", href: "/tools/backlink-analyzer" },
+              { label: "Domain Authority Checker", href: "/tools/domain-authority" },
+              { label: "Page Speed Analyzer", href: "/tools/page-speed" },
+              { label: "Mobile Friendly Test", href: "/tools/mobile-friendly" },
+            ],
+          },
+          {
+            heading: "Keyword Tools",
+            links: [
+              { label: "Keyword Planner", href: "/tools/keyword-planner" },
+              { label: "Keyword Density Checker", href: "/tools/keyword-density" },
+              { label: "Long-Tail Keyword Generator", href: "/tools/longtail-keywords" },
+              { label: "SERP Checker", href: "/tools/serp-checker" },
+            ],
+          },
+          {
+            heading: "Technical",
+            links: [
+              { label: "XML Sitemap Generator", href: "/tools/sitemap-generator" },
+              { label: "Robots.txt Generator", href: "/tools/robots-txt" },
+              { label: "Redirect Checker", href: "/tools/redirect-checker" },
+              { label: "Broken Link Finder", href: "/tools/broken-links" },
+            ],
+          },
+        ],
+        solutions: [
+          { label: "Full SEO Audit", href: "/tools/full-seo-audit" },
+          { label: "Rank Tracker", href: "/tools/rank-tracker" },
+          { label: "Competitor Gap Tool", href: "/tools/competitor-gap" },
+        ],
+      },
+      {
+        id: "content-tools",
+        label: "Content Tools",
+        columns: [
+          {
+            heading: "Writing Aids",
+            links: [
+              { label: "AI Content Generator", href: "/tools/ai-content-generator" },
+              { label: "Blog Title Generator", href: "/tools/blog-title-generator" },
+              { label: "Meta Description Writer", href: "/tools/meta-description" },
+              { label: "Content Readability Checker", href: "/tools/readability" },
+              { label: "Plagiarism Checker", href: "/tools/plagiarism" },
+            ],
+          },
+          {
+            heading: "Social & Copy",
+            links: [
+              { label: "Social Media Caption Generator", href: "/tools/caption-generator" },
+              { label: "Ad Copy Generator", href: "/tools/ad-copy" },
+              { label: "Email Subject Line Tester", href: "/tools/email-subject" },
+              { label: "CTA Button Generator", href: "/tools/cta-generator" },
+            ],
+          },
+          {
+            heading: "Optimization",
+            links: [
+              { label: "Word Count Tool", href: "/tools/word-count" },
+              { label: "Content Scoring Tool", href: "/tools/content-score" },
+              { label: "FAQ Generator", href: "/tools/faq-generator" },
+              { label: "Schema Markup Generator", href: "/tools/schema-generator" },
+            ],
+          },
+        ],
+        solutions: [
+          { label: "Content Audit", href: "/tools/content-audit" },
+          { label: "Content Calendar", href: "/tools/content-calendar" },
+          { label: "Brand Voice Checker", href: "/tools/brand-voice" },
+        ],
+      },
+      {
+        id: "performance-tools",
+        label: "Performance Tools",
+        columns: [
+          {
+            heading: "Speed & Core Web Vitals",
+            links: [
+              { label: "Core Web Vitals Checker", href: "/tools/core-web-vitals" },
+              { label: "GTmetrix Alternative", href: "/tools/speed-test" },
+              { label: "Image Compression Tool", href: "/tools/image-compression" },
+              { label: "CSS Minifier", href: "/tools/css-minifier" },
+              { label: "JS Minifier", href: "/tools/js-minifier" },
+            ],
+          },
+          {
+            heading: "Uptime & Security",
+            links: [
+              { label: "Uptime Monitor", href: "/tools/uptime-monitor" },
+              { label: "SSL Certificate Checker", href: "/tools/ssl-checker" },
+              { label: "Website Security Scanner", href: "/tools/security-scanner" },
+              { label: "HTTP Header Checker", href: "/tools/http-headers" },
+            ],
+          },
+          {
+            heading: "Diagnostics",
+            links: [
+              { label: "DNS Lookup Tool", href: "/tools/dns-lookup" },
+              { label: "WHOIS Lookup", href: "/tools/whois" },
+              { label: "IP Location Finder", href: "/tools/ip-location" },
+              { label: "Website Down Checker", href: "/tools/website-down" },
+            ],
+          },
+        ],
+        solutions: [
+          { label: "Performance Report", href: "/tools/performance-report" },
+          { label: "Speed Optimization Plan", href: "/tools/speed-plan" },
+          { label: "Security Hardening Audit", href: "/tools/security-audit" },
+        ],
+      },
+      {
+        id: "analytics-tools",
+        label: "Analytics Tools",
+        columns: [
+          {
+            heading: "Traffic & Insights",
+            links: [
+              { label: "Traffic Estimator", href: "/tools/traffic-estimator" },
+              { label: "Bounce Rate Analyzer", href: "/tools/bounce-rate" },
+              { label: "UTM Builder", href: "/tools/utm-builder" },
+              { label: "Heatmap Tool", href: "/tools/heatmap" },
+              { label: "Funnel Analyzer", href: "/tools/funnel-analyzer" },
+            ],
+          },
+          {
+            heading: "Social Analytics",
+            links: [
+              { label: "Social Media Audit", href: "/tools/social-audit" },
+              { label: "Hashtag Analyzer", href: "/tools/hashtag-analyzer" },
+              { label: "Engagement Rate Calculator", href: "/tools/engagement-rate" },
+              { label: "Follower Growth Tracker", href: "/tools/follower-tracker" },
+            ],
+          },
+          {
+            heading: "ROI & Reporting",
+            links: [
+              { label: "ROI Calculator", href: "/tools/roi-calculator" },
+              { label: "PPC Budget Planner", href: "/tools/ppc-budget" },
+              { label: "A/B Test Calculator", href: "/tools/ab-calculator" },
+              { label: "Lead Value Estimator", href: "/tools/lead-value" },
+            ],
+          },
+        ],
+        solutions: [
+          { label: "Analytics Dashboard", href: "/tools/analytics-dashboard" },
+          { label: "Custom Report Builder", href: "/tools/report-builder" },
+          { label: "Campaign Tracker", href: "/tools/campaign-tracker" },
+        ],
+      },
+    ],
+  },
 };
 
-const topLinks = ["Services", "About Us", "Case Studies", "Resources"];
+const topLinks = ["Services", "About Us", "Case Studies", "Resources", "Tools"];
 
 /* ─── ICONS ──────────────────────────────────────────────────── */
 const ChevronDown = ({ className = "" }: { className?: string }) => (
@@ -231,18 +393,28 @@ const ChevronRight = () => (
   </svg>
 );
 
-/* ─── SERVICES MEGA MENU (full-width, 4-col layout) ─────────── */
-function ServicesMegaMenu({
+/* ─── SHARED TABBED MEGA MENU (used by both Services & Tools) ── */
+function TabbedMegaMenu({
+  menuKey,
+  ctaTitle,
+  ctaDescription,
+  ctaButtonLabel,
+  ctaButtonHref,
   onClose,
   onMouseEnter,
   onMouseLeave,
 }: {
+  menuKey: "Services" | "Tools";
+  ctaTitle: string;
+  ctaDescription: string;
+  ctaButtonLabel: string;
+  ctaButtonHref: string;
   onClose: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 }) {
   const [activeTab, setActiveTab] = useState(0);
-  const menu = megaMenus["Services"];
+  const menu = megaMenus[menuKey] as { tabs: typeof megaMenus["Services"]["tabs"] };
   const tab = menu.tabs[activeTab];
 
   return (
@@ -276,7 +448,7 @@ function ServicesMegaMenu({
           ))}
         </div>
 
-        {/* Right content: 4 columns with vertical dividers */}
+        {/* Right content: columns + solutions */}
         <div className="flex-1 px-8 py-7">
           <div className="flex gap-0">
             {tab.columns.map((col, ci) => (
@@ -304,7 +476,7 @@ function ServicesMegaMenu({
               </div>
             ))}
 
-            {/* 4th column: Solutions */}
+            {/* Solutions column */}
             <div className="flex-1 px-6 border-l border-gray-100">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
                 Solutions
@@ -330,17 +502,15 @@ function ServicesMegaMenu({
           <div className="mt-6 pt-5 border-t border-gray-100">
             <div className="flex items-center justify-between bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl px-5 py-4">
               <div>
-                <p className="font-bold text-gray-800 text-sm">Free Website Audit</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Comprehensive SEO & performance review — no strings attached.
-                </p>
+                <p className="font-bold text-gray-800 text-sm">{ctaTitle}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{ctaDescription}</p>
               </div>
               <a
-                href="/contact"
+                href={ctaButtonHref}
                 onClick={onClose}
                 className="flex-shrink-0 ml-6 flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-150"
               >
-                Claim Free Audit <ArrowRight />
+                {ctaButtonLabel} <ArrowRight />
               </a>
             </div>
           </div>
@@ -359,7 +529,6 @@ function SimpleMegaMenu({
   onMouseLeave,
 }: {
   items: { label: string; href: string; icon: string }[];
-  /** Horizontal center of the triggering nav button, in px from viewport left */
   centerX: number;
   onClose: () => void;
   onMouseEnter: () => void;
@@ -371,13 +540,12 @@ function SimpleMegaMenu({
       onMouseLeave={onMouseLeave}
       className="fixed w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden"
       style={{
-        top: 64,                          // always flush with header bottom
+        top: 64,
         left: centerX,
-        transform: "translateX(-50%)",    // centre under the button
+        transform: "translateX(-50%)",
         boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
       }}
     >
-      {/* Orange top accent */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-orange-500" />
       {items.map((item) => (
         <a
@@ -430,17 +598,69 @@ function MobileAccordion({
   );
 }
 
+/* ─── MOBILE TABBED SECTION (shared by Services & Tools) ──────── */
+function MobileTabbedSection({
+  menuKey,
+  onClose,
+}: {
+  menuKey: "Services" | "Tools";
+  onClose: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState(0);
+  const menu = megaMenus[menuKey] as { tabs: typeof megaMenus["Services"]["tabs"] };
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-1.5 mb-4 pt-1">
+        {menu.tabs.map((t, i) => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(i)}
+            className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-colors ${
+              activeTab === i
+                ? "bg-orange-500 text-white border-orange-500"
+                : "border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-500"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {menu.tabs[activeTab].columns.map((col, ci) => (
+        <div key={ci} className="mb-4">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            {col.heading}
+          </p>
+          <ul className="space-y-0.5">
+            {col.links.map((link) => (
+              <li key={link.label}>
+                <a
+                  href={link.href}
+                  onClick={onClose}
+                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-500 py-2 border-b border-gray-50 transition-colors"
+                >
+                  <span className="text-orange-400 flex-shrink-0">
+                    <ChevronRight />
+                  </span>
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
+
 /* ─── MAIN HEADER ────────────────────────────────────────────── */
 export default function Header() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mobileServicesTab, setMobileServicesTab] = useState(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Refs to each nav-item wrapper so we can read its center X position
   const navItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  // Computed center-X for the currently active menu
   const [activeCenterX, setActiveCenterX] = useState(0);
 
   useEffect(() => {
@@ -456,9 +676,19 @@ export default function Header() {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+  (async function () {
+    const cal = await getCalApi();
+    cal("ui", {
+      styles: {
+        branding: { brandColor: "#f97316" } // your orange theme
+      }
+    });
+  })();
+}, []);
+
   const handleMouseEnter = (key: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    // Compute the horizontal center of the nav button
     const el = navItemRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
@@ -472,6 +702,10 @@ export default function Header() {
   };
 
   const closeMenu = () => setActiveMenu(null);
+
+  // Helper: is this key a tabbed menu?
+  const isTabbedMenu = (key: string) =>
+    "tabs" in megaMenus[key as keyof typeof megaMenus];
 
   return (
     <>
@@ -496,9 +730,7 @@ export default function Header() {
             {/* ── Desktop Nav ── */}
             <nav className="hidden lg:flex items-center gap-0.5">
               {topLinks.map((key) => {
-                const menu = megaMenus[key as keyof typeof megaMenus];
                 const isActive = activeMenu === key;
-                const isServices = key === "Services";
 
                 return (
                   <div
@@ -523,8 +755,7 @@ export default function Header() {
                       />
                     </button>
 
-                    {/* Invisible bridge: fills the gap between button bottom and dropdown top
-                        so the mouse doesn't "leave" the nav item while travelling down */}
+                    {/* Invisible bridge to prevent gap-triggered close */}
                     {isActive && (
                       <div
                         className="absolute left-0 right-0"
@@ -539,24 +770,22 @@ export default function Header() {
 
             {/* ── Right side: Contact + CTA + Mobile ── */}
             <div className="flex items-center gap-2">
-              {/* Desktop Contact */}
-<a
-  href="/contact"
-  className="hidden lg:flex items-center gap-1.5 border border-orange-500 text-orange-500 text-xs font-bold px-4 py-[7px] rounded-full transition-all duration-150 hover:bg-orange-500 hover:text-white"
->
-  Contact
-</a>
-
-              {/* Desktop CTA */}
               <a
-                href="/get-a-quote"
-                className="hidden lg:flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all duration-150 shadow-sm hover:shadow-md"
+                href="/contact"
+                className="hidden lg:flex items-center gap-1.5 border border-orange-500 text-orange-500 text-xs font-bold px-4 py-[7px] rounded-full transition-all duration-150 hover:bg-orange-500 hover:text-white"
               >
-                Get a Quote
-                <ArrowRight />
+                Contact
               </a>
 
-              {/* Mobile CTA */}
+              <button
+  data-cal-link="junixo-digital/get-a-quote"
+  data-cal-config='{"layout":"month_view"}'
+  className="hidden lg:flex items-center cursor-pointer gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all duration-150 shadow-sm hover:shadow-md"
+>
+  Get a Quote
+  <ArrowRight />
+</button>
+
               <a
                 href="/get-a-quote"
                 className="lg:hidden flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all duration-150 shadow-sm hover:shadow-md"
@@ -565,7 +794,6 @@ export default function Header() {
                 <ArrowRight />
               </a>
 
-              {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors ml-1"
@@ -578,32 +806,50 @@ export default function Header() {
         </div>
       </header>
 
-      {/* ── Desktop Dropdowns — rendered outside header, anchored to header bottom ── */}
+      {/* ── Desktop Dropdowns ── */}
       {activeMenu && (
         <div
           onMouseEnter={() => handleMouseEnter(activeMenu)}
           onMouseLeave={handleMouseLeave}
         >
-          {activeMenu === "Services" ? (
-            <ServicesMegaMenu
+          {activeMenu === "Services" && (
+            <TabbedMegaMenu
+              menuKey="Services"
+              ctaTitle="Free Website Audit"
+              ctaDescription="Comprehensive SEO & performance review — no strings attached."
+              ctaButtonLabel="Claim Free Audit"
+              ctaButtonHref="/contact"
               onClose={closeMenu}
               onMouseEnter={() => handleMouseEnter(activeMenu)}
               onMouseLeave={handleMouseLeave}
             />
-          ) : (
-            (() => {
-              const menu = megaMenus[activeMenu as keyof typeof megaMenus];
-              return "simple" in menu ? (
-                <SimpleMegaMenu
-                  items={menu.simple as { label: string; href: string; icon: string }[]}
-                  centerX={activeCenterX}
-                  onClose={closeMenu}
-                  onMouseEnter={() => handleMouseEnter(activeMenu)}
-                  onMouseLeave={handleMouseLeave}
-                />
-              ) : null;
-            })()
           )}
+
+          {activeMenu === "Tools" && (
+            <TabbedMegaMenu
+              menuKey="Tools"
+              ctaTitle="Free Tools Suite"
+              ctaDescription="Access 30+ free digital marketing & SEO tools — no sign-up required."
+              ctaButtonLabel="Explore All Tools"
+              ctaButtonHref="/tools"
+              onClose={closeMenu}
+              onMouseEnter={() => handleMouseEnter(activeMenu)}
+              onMouseLeave={handleMouseLeave}
+            />
+          )}
+
+          {activeMenu !== "Services" && activeMenu !== "Tools" && (() => {
+            const menu = megaMenus[activeMenu as keyof typeof megaMenus];
+            return "simple" in menu ? (
+              <SimpleMegaMenu
+                items={menu.simple as { label: string; href: string; icon: string }[]}
+                centerX={activeCenterX}
+                onClose={closeMenu}
+                onMouseEnter={() => handleMouseEnter(activeMenu)}
+                onMouseLeave={handleMouseLeave}
+              />
+            ) : null;
+          })()}
         </div>
       )}
 
@@ -643,49 +889,13 @@ export default function Header() {
 
           {/* Drawer Body */}
           <div className="flex-1 overflow-y-auto">
-            {/* Services accordion with tabs */}
+
+            {/* Services accordion */}
             <MobileAccordion label="Services">
-              <div className="flex flex-wrap gap-1.5 mb-4 pt-1">
-                {megaMenus.Services.tabs.map((t, i) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setMobileServicesTab(i)}
-                    className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-colors ${
-                      mobileServicesTab === i
-                        ? "bg-orange-500 text-white border-orange-500"
-                        : "border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-500"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              {megaMenus.Services.tabs[mobileServicesTab].columns.map((col, ci) => (
-                <div key={ci} className="mb-4">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    {col.heading}
-                  </p>
-                  <ul className="space-y-0.5">
-                    {col.links.map((link) => (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-500 py-2 border-b border-gray-50 transition-colors"
-                        >
-                          <span className="text-orange-400 flex-shrink-0">
-                            <ChevronRight />
-                          </span>
-                          {link.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <MobileTabbedSection menuKey="Services" onClose={() => setMobileOpen(false)} />
             </MobileAccordion>
 
-            {/* Other nav items */}
+            {/* Simple dropdowns */}
             {(["About Us", "Case Studies", "Resources"] as const).map((key) => (
               <MobileAccordion key={key} label={key}>
                 <ul className="space-y-0.5 pt-1">
@@ -706,6 +916,11 @@ export default function Header() {
                 </ul>
               </MobileAccordion>
             ))}
+
+            {/* Tools accordion */}
+            <MobileAccordion label="Tools">
+              <MobileTabbedSection menuKey="Tools" onClose={() => setMobileOpen(false)} />
+            </MobileAccordion>
 
             {/* Contact */}
             <div className="border-b border-gray-100">
