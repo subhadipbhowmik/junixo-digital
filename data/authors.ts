@@ -30,7 +30,7 @@ export const authors: Record<string, Author> = {
     id: "shubhadip-bhowmik",
     name: "Shubhadip Bhowmik",
     bio: "Shubhadip is a lead content strategist at Junixo with 7+ years of experience in creating compelling narratives that drive engagement and conversions.",
-    avatar: "https://shubhadipbhowmik.vercel.app/me.png",
+    avatar: "https://avatars.githubusercontent.com/u/57017965?v=4",
     role: "Lead Content Strategist",
     social: {
       twitter: "http://x.com/myselfshubhadip",

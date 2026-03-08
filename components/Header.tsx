@@ -12,7 +12,7 @@ const megaMenus = {
           {
             heading: "Core Services",
             links: [
-              { label: "Social Media Marketing", href: "/services/social-media-marketing" },
+              { label: "Social Media Marketing", href: "/services/digital-marketing/social-media-marketing" },
               { label: "PPC / Google Ads", href: "/services/ppc-google-ads" },
               { label: "Content Marketing", href: "/services/content-marketing" },
               { label: "Email Marketing", href: "/services/email-marketing" },
