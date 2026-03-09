@@ -1033,13 +1033,13 @@ const EMPTY_FORM: LeadForm = {
 
 type FormErrors = Partial<Record<keyof LeadForm, string>>;
 
+// ─── CHANGE 1: Removed phone validation — it is now optional ───
 function validate(form: LeadForm, isOtherService: boolean): FormErrors {
   const errs: FormErrors = {};
   if (!form.full_name.trim())      errs.full_name     = "Full name is required.";
   if (!form.email.trim())          errs.email         = "Email address is required.";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
                                    errs.email         = "Please enter a valid email.";
-  if (!form.phone.trim())          errs.phone         = "Phone number is required.";
   if (!form.service)               errs.service       = "Please select a service.";
   if (isOtherService && !form.other_service.trim())
                                    errs.other_service = "Please specify your service.";
@@ -1058,7 +1058,6 @@ function FinalCTA() {
   function set(key: keyof LeadForm) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
-      /* Clear the error for this field as the user types */
       if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
     };
   }
@@ -1077,11 +1076,12 @@ function FinalCTA() {
     const source_page =
       typeof window !== "undefined" ? window.location.pathname : "";
 
+    // ─── CHANGE 2: phone sent as null when empty, matching Supabase optional column ───
     const payload = {
       full_name: form.full_name,
       email: form.email,
-      phone: form.phone || null,
-      website_url: form.website_url || null,
+      phone: form.phone.trim() || null,
+      website_url: form.website_url.trim() || null,
       service: isOtherService ? form.other_service : form.service,
       message: form.message,
       source_page,
@@ -1102,7 +1102,6 @@ function FinalCTA() {
     setErrors({});
   };
 
-  /* ── Shared input class ── */
   const inputCls =
     "w-full text-sm text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors";
 
@@ -1111,7 +1110,6 @@ function FinalCTA() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="bg-white rounded-3xl border border-orange-100 overflow-hidden shadow-sm">
-            {/* ── Two-column layout: info left, form right ── */}
             <div className="grid lg:grid-cols-2">
 
               {/* ── LEFT — info panel ── */}
@@ -1208,11 +1206,13 @@ function FinalCTA() {
                         </div>
                       </div>
 
-                      {/* Row 2: Phone + Website */}
+                      {/* Row 2: Phone (optional) + Website (optional) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
+                          {/* ─── CHANGE 3: Label updated — asterisk removed, "(optional)" added ─── */}
                           <label htmlFor="phone" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                            Phone Number <span className="text-orange-500">*</span>
+                            Phone Number
+                            <span className="text-gray-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
                           </label>
                           <input
                             id="phone"
@@ -1220,9 +1220,8 @@ function FinalCTA() {
                             placeholder="+44 7700 900000"
                             value={form.phone}
                             onChange={set("phone")}
-                            className={`${inputCls} ${errors.phone ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""}`}
+                            className={inputCls}
                           />
-                          {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                         </div>
                         <div>
                           <label htmlFor="website_url" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">

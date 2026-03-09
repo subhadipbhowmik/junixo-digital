@@ -1393,20 +1393,6 @@ function CTABanner() {
                 </a>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-5 mt-10 pt-8 border-t border-white/20">
-                {[
-                  { val: "80+", label: "Brands we work with" },
-                  { val: "340%", label: "Avg organic traffic growth" },
-                  { val: "No", label: "Long-term contracts" },
-                ].map((s, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-white font-black text-xl leading-none">
-                      {s.val}
-                    </p>
-                    <p className="text-orange-200 text-xs mt-0.5">{s.label}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </FadeIn>

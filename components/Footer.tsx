@@ -85,7 +85,6 @@ const bottomLinks = [
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Terms & Conditions", href: "/terms" },
   { label: "Legal Disclaimer", href: "/legal" },
-  { label: "Cancellation & Refund", href: "/refund-policy" },
   { label: "Sitemap", href: "/sitemap.xml" },
 ];
 

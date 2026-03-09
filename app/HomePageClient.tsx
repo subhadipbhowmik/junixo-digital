@@ -509,10 +509,10 @@ function CaseStudiesSection() {
                   <div className="absolute top-4 left-4">
                     <span className="bg-white/90 backdrop-blur text-gray-700 font-bold text-xs px-3 py-1.5 rounded-full border border-gray-100">{cs.tag}</span>
                   </div>
-                  <div className="absolute bottom-4 right-4 bg-orange-500 text-white rounded-xl px-3 py-2 text-center">
+                  {/* <div className="absolute bottom-4 right-4 bg-orange-500 text-white rounded-xl px-3 py-2 text-center">
                     <p className="font-black text-lg leading-none">{cs.metric}</p>
                     <p className="text-[10px] opacity-90">{cs.metricLabel}</p>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="p-6">
                   <h3 className="text-gray-900 font-bold text-lg mb-2">{cs.title}</h3>
