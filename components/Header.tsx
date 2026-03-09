@@ -222,7 +222,7 @@ const megaMenus = {
           {
             heading: "Technical",
             links: [
-              { label: "XML Sitemap Generator", href: "/tools/sitemap-generator" },
+              { label: "XML Sitemap Generator", href: "/tools/seo-tools/xml-sitemap-generator" },
               { label: "Robots.txt Generator", href: "/tools/robots-txt" },
               { label: "Redirect Checker", href: "/tools/redirect-checker" },
               { label: "Broken Link Finder", href: "/tools/broken-links" },
