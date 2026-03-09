@@ -1,13 +1,10 @@
-// root/middleware.ts
-
-
 import { NextRequest, NextResponse } from "next/server";
 
 const SESSION_COOKIE = "junixo_admin_session";
 // Simple token: base64 of credentials — checked server-side only (httpOnly cookie)
 export const VALID_TOKEN = btoa("shubhadipdev:Shubhadipdev@721629");
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only intercept /admin/* routes
