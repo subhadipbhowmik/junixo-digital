@@ -4,9 +4,9 @@ import { getAllPosts, getAllCategories } from "@/lib/blog";
 import BlogListClient from "@/components/blog/BlogListClient";
 
 export const metadata: Metadata = {
-  title: "Blog — Digital Marketing, SEO & Web Development | Junixo Digital",
+  title: "Blog - Digital Marketing, SEO & Web Development",
   description:
-    "Expert guides on digital marketing, SEO, web development and app development — written by the Junixo Digital team.",
+    "Expert guides on digital marketing, SEO, web development and app development - written by the Junixo Digital team.",
   openGraph: {
     title: "Blog | Junixo Digital",
     description: "Expert digital marketing, SEO and web development guides.",

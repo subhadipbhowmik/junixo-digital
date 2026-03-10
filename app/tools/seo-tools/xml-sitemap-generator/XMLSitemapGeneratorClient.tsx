@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 
 /* ══════════════════════════════════════════════════════════════
-   HOOKS (same pattern as design system)
+   HOOKS
 ══════════════════════════════════════════════════════════════ */
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -150,42 +150,22 @@ const LinkIcon = ({ size = 20 }: { size?: number }) => (
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
+const SpinnerIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="animate-spin">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+const XIcon = ({ size = 14 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
 
 /* ══════════════════════════════════════════════════════════════
    CONSTANTS & TYPES
 ══════════════════════════════════════════════════════════════ */
-const CHANGEFREQ_OPTIONS = [
-  "always",
-  "hourly",
-  "daily",
-  "weekly",
-  "monthly",
-  "yearly",
-  "never",
-];
-
-const PRIORITY_OPTIONS = [
-  "1.0",
-  "0.9",
-  "0.8",
-  "0.7",
-  "0.6",
-  "0.5",
-  "0.4",
-  "0.3",
-  "0.2",
-  "0.1",
-  "0.0",
-];
-
-const SAMPLE_URLS = `https://junixo.com/
-https://junixo.com/about
-https://junixo.com/services
-https://junixo.com/services/seo
-https://junixo.com/services/web-design
-https://junixo.com/blog
-https://junixo.com/blog/how-to-rank-on-google
-https://junixo.com/contact`;
+const CHANGEFREQ_OPTIONS = ["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"];
+const PRIORITY_OPTIONS = ["1.0","0.9","0.8","0.7","0.6","0.5","0.4","0.3","0.2","0.1","0.0"];
 
 interface Settings {
   changefreq: string;
@@ -222,45 +202,81 @@ function escapeXML(str: string): string {
 }
 
 function generateXML(rawInput: string, settings: Settings): GenerateResult {
-  const lines = rawInput
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-
+  const lines = rawInput.split("\n").map((l) => l.trim()).filter(Boolean);
   const validURLs: string[] = [];
   const invalidURLs: string[] = [];
 
   lines.forEach((line) => {
-    if (isValidURL(line)) {
-      validURLs.push(line.trim());
-    } else {
-      invalidURLs.push(line);
-    }
+    if (isValidURL(line)) validURLs.push(line.trim());
+    else invalidURLs.push(line);
   });
 
-  if (validURLs.length === 0) {
-    return { xml: "", validCount: 0, invalidURLs };
-  }
+  if (validURLs.length === 0) return { xml: "", validCount: 0, invalidURLs };
 
   const today = new Date().toISOString().split("T")[0];
   const lastmodDate = settings.lastmod || today;
 
-  const urlEntries = validURLs
-    .map((url) => {
-      let entry = `  <url>\n    <loc>${escapeXML(url)}</loc>\n`;
-      if (settings.includeLastmod) {
-        entry += `    <lastmod>${lastmodDate}</lastmod>\n`;
-      }
-      entry += `    <changefreq>${settings.changefreq}</changefreq>\n`;
-      entry += `    <priority>${settings.priority}</priority>\n`;
-      entry += `  </url>`;
-      return entry;
-    })
-    .join("\n");
+  const urlEntries = validURLs.map((url) => {
+    let entry = `  <url>\n    <loc>${escapeXML(url)}</loc>\n`;
+    if (settings.includeLastmod) entry += `    <lastmod>${lastmodDate}</lastmod>\n`;
+    entry += `    <changefreq>${settings.changefreq}</changefreq>\n`;
+    entry += `    <priority>${settings.priority}</priority>\n`;
+    entry += `  </url>`;
+    return entry;
+  }).join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>`;
-
   return { xml, validCount: validURLs.length, invalidURLs };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CRAWL UTILITY — reads SSE stream from GET /api/crawl
+   Calls onUrl(url) for each URL as it arrives in real-time
+   Calls onSource(source) once the source is known
+   Returns final count
+══════════════════════════════════════════════════════════════ */
+async function crawlDomainStream(
+  domain: string,
+  maxUrls: number,
+  onUrl: (url: string) => void,
+  onSource: (source: string) => void,
+  signal?: AbortSignal,
+): Promise<{ count: number; source: string }> {
+  const params = new URLSearchParams({ domain, maxUrls: String(maxUrls) });
+  const res = await fetch(`/api/crawl?${params}`, { signal });
+
+  if (!res.ok || !res.body) throw new Error(`API error ${res.status}`);
+
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let   buffer  = "";
+  let   source  = "";
+  let   count   = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n\n");
+    buffer = parts.pop() ?? "";
+
+    for (const part of parts) {
+      const line = part.trim();
+      if (!line.startsWith("data:")) continue;
+      try {
+        const evt = JSON.parse(line.slice(5).trim());
+        if (evt.type === "url")    { onUrl(evt.value); count++; }
+        if (evt.type === "source") { source = evt.value; onSource(evt.value); }
+        if (evt.type === "done")   { source = evt.source ?? source; count = evt.count ?? count; }
+        if (evt.type === "error")  throw new Error(evt.message);
+      } catch (e) {
+        if (e instanceof Error && e.message !== "JSON") throw e;
+      }
+    }
+  }
+
+  return { count, source };
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -268,49 +284,25 @@ function generateXML(rawInput: string, settings: Settings): GenerateResult {
 ══════════════════════════════════════════════════════════════ */
 function Hero() {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setTimeout(() => setMounted(true), 80);
-  }, []);
+  useEffect(() => { setTimeout(() => setMounted(true), 80); }, []);
 
   return (
     <section className="relative overflow-hidden bg-white pt-16 pb-16 lg:pt-20 lg:pb-20">
       {/* BG blobs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-50 rounded-full opacity-70"
-          style={{ transform: "translate(30%,-30%)" }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-[320px] h-[320px] bg-pink-50 rounded-full opacity-50"
-          style={{ transform: "translate(-25%,25%)" }}
-        />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-50 rounded-full opacity-70" style={{ transform: "translate(30%,-30%)" }} />
+        <div className="absolute bottom-0 left-0 w-[320px] h-[320px] bg-pink-50 rounded-full opacity-50" style={{ transform: "translate(-25%,25%)" }} />
         {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-orange-200 opacity-25"
-            style={{
-              width: [5, 8, 4, 6, 3][i],
-              height: [5, 8, 4, 6, 3][i],
-              top: ["18%", "70%", "40%", "82%", "28%"][i],
-              left: ["8%", "5%", "90%", "72%", "95%"][i],
-            }}
-          />
+          <div key={i} className="absolute rounded-full bg-orange-200 opacity-25" style={{ width: [5, 8, 4, 6, 3][i], height: [5, 8, 4, 6, 3][i], top: ["18%", "70%", "40%", "82%", "28%"][i], left: ["8%", "5%", "90%", "72%", "95%"][i] }} />
         ))}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Breadcrumb */}
-        <div
-          className="flex items-center gap-2 text-sm text-gray-400 mb-10"
-          style={{ opacity: mounted ? 1 : 0, transition: "all 0.5s ease 0.1s" }}
-        >
-          <a href="/" className="hover:text-orange-500 transition-colors">
-            Home
-          </a>
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-10" style={{ opacity: mounted ? 1 : 0, transition: "all 0.5s ease 0.1s" }}>
+          <a href="/" className="hover:text-orange-500 transition-colors">Home</a>
           <span>/</span>
-          <a href="/tools" className="hover:text-orange-500 transition-colors">
-            Free Tools
-          </a>
+          <a href="/tools" className="hover:text-orange-500 transition-colors">Free Tools</a>
           <span>/</span>
           <span className="text-gray-700 font-medium">XML Sitemap Generator</span>
         </div>
@@ -318,141 +310,76 @@ function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left */}
           <div>
-            <div
-              className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-full px-4 py-1.5 mb-6"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transform: mounted ? "translateY(0)" : "translateY(16px)",
-                transition: "all 0.5s ease 0.15s",
-              }}
-            >
+            <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-full px-4 py-1.5 mb-6" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(16px)", transition: "all 0.5s ease 0.15s" }}>
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">
-                Free SEO Tool
-              </span>
+              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">Free SEO Tool</span>
             </div>
 
-            <h1
-              className="text-4xl sm:text-5xl lg:text-[52px] font-black text-gray-900 leading-[1.07] tracking-tight mb-6"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transform: mounted ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.55s ease 0.2s",
-              }}
-            >
-              Free XML{" "}
-              <span className="relative inline-block text-orange-500">
-                Sitemap Generator
-              </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-black text-gray-900 leading-[1.07] tracking-tight mb-6" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(20px)", transition: "all 0.55s ease 0.2s" }}>
+              Free XML{" "}<span className="relative inline-block text-orange-500">Sitemap Generator</span>
             </h1>
 
-            <p
-              className="text-gray-500 text-lg leading-relaxed mb-8 max-w-lg"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transform: mounted ? "translateY(0)" : "translateY(16px)",
-                transition: "all 0.55s ease 0.3s",
-              }}
-            >
-              Paste your URLs, configure change frequency and priority, and
-              generate a valid XML sitemap in seconds — ready to submit to
-              Google Search Console. No sign-up required.
+            <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-lg" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(16px)", transition: "all 0.55s ease 0.3s" }}>
+              Enter your domain to auto-crawl all URLs, or paste them manually. Configure settings and generate a valid XML sitemap in seconds — ready for Google Search Console.
             </p>
 
-            <ul
-              className="space-y-3 mb-9"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transform: mounted ? "translateY(0)" : "translateY(16px)",
-                transition: "all 0.55s ease 0.38s",
-              }}
-            >
+            <ul className="space-y-3 mb-9" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(16px)", transition: "all 0.55s ease 0.38s" }}>
               {[
+                "Auto-crawl your domain to fetch all URLs",
                 "Generates W3C-compliant XML sitemap format",
                 "Set change frequency, priority & last modified date",
-                "Validates URLs — skips invalid entries automatically",
                 "One-click copy or download as sitemap.xml",
               ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 text-gray-700 font-medium text-sm"
-                >
-                  <span className="text-orange-500 flex-shrink-0">
-                    <CheckCircle />
-                  </span>
+                <li key={item} className="flex items-center gap-3 text-gray-700 font-medium text-sm">
+                  <span className="text-orange-500 flex-shrink-0"><CheckCircle /></span>
                   {item}
                 </li>
               ))}
             </ul>
 
-            <div
-              className="flex flex-wrap gap-3"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transition: "all 0.55s ease 0.46s",
-              }}
-            >
-              <a
-                href="#tool"
-                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5"
-              >
+            <div className="flex flex-wrap gap-3" style={{ opacity: mounted ? 1 : 0, transition: "all 0.55s ease 0.46s" }}>
+              <a href="#tool" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
                 Generate My Sitemap <ArrowRight />
               </a>
-              <a
-                href="/services/seo"
-                className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-orange-400 text-gray-700 hover:text-orange-500 font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5"
-              >
+              <a href="/services/seo" className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-orange-400 text-gray-700 hover:text-orange-500 font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5">
                 Our SEO Services
               </a>
             </div>
 
-            {/* Trust row */}
-            <div
-              className="flex flex-wrap items-center gap-5 mt-10 pt-8 border-t border-gray-100"
-              style={{
-                opacity: mounted ? 1 : 0,
-                transition: "all 0.55s ease 0.54s",
-              }}
-            >
+            {/* Trust row — with avatars */}
+            <div className="flex flex-wrap items-center gap-5 mt-10 pt-8 border-t border-gray-100" style={{ opacity: mounted ? 1 : 0, transition: "all 0.55s ease 0.54s" }}>
               <div className="flex items-center gap-2">
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <StarIcon key={i} />
-                  ))}
+                <div className="flex -space-x-2">
+                  <img src="https://placehold.co/32x32/fff7ed/f97316?text=SM" className="w-8 h-8 rounded-full border-2 border-white" alt="SM" />
+                  <img src="https://placehold.co/32x32/eff6ff/3b82f6?text=JO" className="w-8 h-8 rounded-full border-2 border-white" alt="JO" />
+                  <img src="https://placehold.co/32x32/f0fdf4/22c55e?text=PS" className="w-8 h-8 rounded-full border-2 border-white" alt="PS" />
+                  <img src="https://placehold.co/32x32/fdf4ff/a855f7?text=DC" className="w-8 h-8 rounded-full border-2 border-white" alt="DC" />
                 </div>
-                <p className="text-gray-500 text-xs">Trusted by 80+ brands</p>
+                <div>
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map((i) => <StarIcon key={i} />)}
+                  </div>
+                  <p className="text-gray-500 text-xs">80+ brands managed</p>
+                </div>
               </div>
               <div className="w-px h-8 bg-gray-200" />
               <div>
-                <p className="text-gray-900 font-black text-lg leading-none">
-                  100%
-                </p>
+                <p className="text-gray-900 font-black text-lg leading-none">100%</p>
                 <p className="text-gray-400 text-xs">Free — no sign-up</p>
               </div>
               <div className="w-px h-8 bg-gray-200" />
               <div>
-                <p className="text-gray-900 font-black text-lg leading-none">
-                  W3C
-                </p>
+                <p className="text-gray-900 font-black text-lg leading-none">W3C</p>
                 <p className="text-gray-400 text-xs">Compliant output</p>
               </div>
             </div>
           </div>
 
           {/* Right — visual */}
-          <div
-            className="relative hidden lg:block"
-            style={{
-              opacity: mounted ? 1 : 0,
-              transform: mounted ? "translateX(0)" : "translateX(36px)",
-              transition: "all 0.75s ease 0.3s",
-            }}
-          >
+          <div className="relative hidden lg:block" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateX(0)" : "translateX(36px)", transition: "all 0.75s ease 0.3s" }}>
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-pink-50 rounded-3xl transform rotate-2" />
-              {/* Code preview card */}
               <div className="relative bg-gray-900 rounded-3xl p-6 shadow-2xl font-mono text-sm leading-relaxed overflow-hidden">
-                {/* Window chrome */}
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-yellow-400" />
@@ -460,18 +387,13 @@ function Hero() {
                   <span className="ml-3 text-gray-500 text-xs">sitemap.xml</span>
                 </div>
                 <div className="text-xs leading-6">
-                  <p className="text-blue-400">
-                    {"<?"}
+                  <p className="text-blue-400">{"<?"}
                     <span className="text-orange-300">xml</span>
                     {' version="1.0" encoding="UTF-8"?>'}
                   </p>
-                  <p className="text-blue-400">
-                    {"<"}
+                  <p className="text-blue-400">{"<"}
                     <span className="text-orange-300">urlset</span>
-                    <span className="text-green-300">
-                      {' xmlns="http://www.sitemaps.org'}
-                    </span>
-                    <span className="text-green-300">{'/schemas/sitemap/0.9"'}</span>
+                    <span className="text-green-300">{' xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'}</span>
                     {">"}
                   </p>
                   {[
@@ -480,79 +402,29 @@ function Hero() {
                     ["https://junixo.com/services", "0.9", "weekly"],
                   ].map(([url, pri, freq]) => (
                     <div key={url} className="ml-2 mt-1">
-                      <p className="text-blue-400">
-                        {"  <"}
-                        <span className="text-orange-300">url</span>
-                        {">"}
-                      </p>
-                      <p className="ml-4 text-gray-300">
-                        {"    <"}
-                        <span className="text-orange-300">loc</span>
-                        {">"}
-                        <span className="text-green-300">{url}</span>
-                        {"</"}
-                        <span className="text-orange-300">loc</span>
-                        {">"}
-                      </p>
-                      <p className="ml-4 text-gray-300">
-                        {"    <"}
-                        <span className="text-orange-300">priority</span>
-                        {">"}
-                        <span className="text-amber-300">{pri}</span>
-                        {"</"}
-                        <span className="text-orange-300">priority</span>
-                        {">"}
-                      </p>
-                      <p className="ml-4 text-gray-300">
-                        {"    <"}
-                        <span className="text-orange-300">changefreq</span>
-                        {">"}
-                        <span className="text-amber-300">{freq}</span>
-                        {"</"}
-                        <span className="text-orange-300">changefreq</span>
-                        {">"}
-                      </p>
-                      <p className="text-blue-400">
-                        {"  </"}
-                        <span className="text-orange-300">url</span>
-                        {">"}
-                      </p>
+                      <p className="text-blue-400">{"  <"}<span className="text-orange-300">url</span>{">"}</p>
+                      <p className="ml-4 text-gray-300">{"    <"}<span className="text-orange-300">loc</span>{">"}<span className="text-green-300">{url}</span>{"</"}<span className="text-orange-300">loc</span>{">"}</p>
+                      <p className="ml-4 text-gray-300">{"    <"}<span className="text-orange-300">priority</span>{">"}<span className="text-amber-300">{pri}</span>{"</"}<span className="text-orange-300">priority</span>{">"}</p>
+                      <p className="ml-4 text-gray-300">{"    <"}<span className="text-orange-300">changefreq</span>{">"}<span className="text-amber-300">{freq}</span>{"</"}<span className="text-orange-300">changefreq</span>{">"}</p>
+                      <p className="text-blue-400">{"  </"}<span className="text-orange-300">url</span>{">"}</p>
                     </div>
                   ))}
-                  <p className="text-blue-400 mt-1">
-                    {"</"}
-                    <span className="text-orange-300">urlset</span>
-                    {">"}
-                  </p>
+                  <p className="text-blue-400 mt-1">{"</"}<span className="text-orange-300">urlset</span>{">"}</p>
                 </div>
-                {/* Gradient fade at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-900 to-transparent" />
               </div>
-              {/* Floating badge */}
               <div className="absolute -top-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-2.5 border border-gray-100">
-                <span className="text-orange-500">
-                  <CheckCircle size={18} />
-                </span>
+                <span className="text-orange-500"><CheckCircle size={18} /></span>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    Valid Format
-                  </p>
-                  <p className="text-gray-900 font-black text-sm leading-none">
-                    W3C Compliant
-                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Valid Format</p>
+                  <p className="text-gray-900 font-black text-sm leading-none">W3C Compliant</p>
                 </div>
               </div>
               <div className="absolute -bottom-4 right-8 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-2.5 border border-gray-100">
-                <span className="text-green-500">
-                  <ZapIcon size={18} />
-                </span>
+                <span className="text-green-500"><ZapIcon size={18} /></span>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    Ready In
-                  </p>
-                  <p className="text-gray-900 font-black text-sm leading-none">
-                    Seconds
-                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ready In</p>
+                  <p className="text-gray-900 font-black text-sm leading-none">Seconds</p>
                 </div>
               </div>
             </div>
@@ -564,10 +436,337 @@ function Hero() {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CUSTOM SELECT
+══════════════════════════════════════════════════════════════ */
+function CustomSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-700 font-medium hover:border-orange-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all cursor-pointer"
+      >
+        <span>{selected?.label ?? value}</span>
+        <svg
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1.5 w-full bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden"
+          style={{ animation: "dropIn 0.15s ease" }}
+        >
+          <style>{`@keyframes dropIn { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }`}</style>
+          <div className="max-h-52 overflow-y-auto py-1.5">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                  opt.value === value
+                    ? "bg-orange-50 text-orange-600 font-bold"
+                    : "text-gray-700 hover:bg-gray-50 font-medium"
+                }`}
+              >
+                <span>{opt.label}</span>
+                {opt.value === value && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CUSTOM DATE PICKER
+══════════════════════════════════════════════════════════════ */
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DAYS   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+function CustomDatePicker({
+  value,
+  onChange,
+}: {
+  value: string;  // "YYYY-MM-DD"
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Parse current value
+  const parsed = value ? new Date(value + "T00:00:00") : new Date();
+  const [viewYear,  setViewYear]  = useState(parsed.getFullYear());
+  const [viewMonth, setViewMonth] = useState(parsed.getMonth());
+
+  const selectedDate = value ? new Date(value + "T00:00:00") : null;
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Format display
+  const display = selectedDate
+    ? selectedDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+    : "Select date";
+
+  // Build calendar grid
+  const firstDay  = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  // Pad to full weeks
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  function selectDay(day: number) {
+    const mm = String(viewMonth + 1).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    onChange(`${viewYear}-${mm}-${dd}`);
+    setOpen(false);
+  }
+
+  function prevMonth() {
+    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
+    else setViewMonth(m => m - 1);
+  }
+  function nextMonth() {
+    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
+    else setViewMonth(m => m + 1);
+  }
+
+  const today = new Date();
+  const isSelected = (day: number) =>
+    selectedDate &&
+    selectedDate.getFullYear() === viewYear &&
+    selectedDate.getMonth()    === viewMonth &&
+    selectedDate.getDate()     === day;
+
+  const isToday = (day: number) =>
+    today.getFullYear() === viewYear &&
+    today.getMonth()    === viewMonth &&
+    today.getDate()     === day;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-700 font-medium hover:border-orange-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all cursor-pointer"
+      >
+        <span className={selectedDate ? "text-gray-700" : "text-gray-400"}>{display}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 flex-shrink-0">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="absolute z-50 mt-1.5 left-0 bg-white border border-gray-100 rounded-2xl shadow-xl p-4 w-72"
+          style={{ animation: "dropIn 0.15s ease" }}
+        >
+          {/* Month nav */}
+          <div className="flex items-center justify-between mb-3">
+            <button type="button" onClick={prevMonth} className="w-8 h-8 rounded-lg hover:bg-orange-50 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors cursor-pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div className="text-sm font-bold text-gray-800">{MONTHS[viewMonth]} {viewYear}</div>
+            <button type="button" onClick={nextMonth} className="w-8 h-8 rounded-lg hover:bg-orange-50 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors cursor-pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {DAYS.map((d) => (
+              <div key={d} className="text-center text-[10px] font-bold text-gray-400 uppercase py-1">{d}</div>
+            ))}
+          </div>
+
+          {/* Calendar cells */}
+          <div className="grid grid-cols-7 gap-y-0.5">
+            {cells.map((day, i) => (
+              <div key={i} className="flex items-center justify-center">
+                {day ? (
+                  <button
+                    type="button"
+                    onClick={() => selectDay(day)}
+                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected(day)
+                        ? "bg-orange-500 text-white shadow-md shadow-orange-200"
+                        : isToday(day)
+                        ? "border-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+                        : "text-gray-700 hover:bg-orange-50 hover:text-orange-500"
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ) : (
+                  <div className="w-8 h-8" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Today shortcut */}
+          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+            <button
+              type="button"
+              onClick={() => {
+                const t = new Date();
+                onChange(`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`);
+                setOpen(false);
+              }}
+              className="text-xs text-orange-500 font-bold hover:text-orange-600 cursor-pointer transition-colors"
+            >
+              Today
+            </button>
+            <button type="button" onClick={() => setOpen(false)} className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">Close</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   XML SYNTAX HIGHLIGHTER
+   Renders XML with per-token coloring + line numbers.
+   No external lib — pure React.
+══════════════════════════════════════════════════════════════ */
+function highlightXMLLine(line: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let rest = line;
+  let key  = 0;
+
+  // XML declaration  <?xml ... ?>
+  if (/^\s*<\?xml/.test(rest)) {
+    parts.push(<span key={key++} className="text-gray-400 italic">{rest}</span>);
+    return parts;
+  }
+
+  // Closing tag  </tagname>
+  const closing = rest.match(/^(\s*)(<\/)([\w:.-]+)(>)(.*)$/);
+  if (closing) {
+    const [, indent, open, tag, close, tail] = closing;
+    parts.push(<span key={key++}>{indent}</span>);
+    parts.push(<span key={key++} className="text-blue-500">{open}</span>);
+    parts.push(<span key={key++} className="text-orange-600 font-medium">{tag}</span>);
+    parts.push(<span key={key++} className="text-blue-500">{close}</span>);
+    if (tail) parts.push(<span key={key++} className="text-gray-400">{tail}</span>);
+    return parts;
+  }
+
+  // Opening/self-closing tag with optional attributes and inline content
+  const full = rest.match(/^(\s*)(<)([\w:.-]+)((?:\s+[\w:.-]+=["'][^"']*["'])*\s*)(\/?>)(.*?)(<\/[\w:.-]+>)?(.*)$/);
+  if (full) {
+    const [, indent, lt, tag, attrs, gt, content, closeTag, tail] = full;
+    parts.push(<span key={key++}>{indent}</span>);
+    parts.push(<span key={key++} className="text-blue-500">{lt}</span>);
+    parts.push(<span key={key++} className="text-orange-600 font-medium">{tag}</span>);
+
+    // Colour attributes
+    if (attrs) {
+      const attrParts = attrs.split(/(\s+[\w:.-]+=["'][^"']*["'])/g);
+      attrParts.forEach((a) => {
+        if (!a) return;
+        const m = a.match(/^(\s+)([\w:.-]+)(=)(["'])(.*)(["'])$/);
+        if (m) {
+          parts.push(<span key={key++}>{m[1]}</span>);
+          parts.push(<span key={key++} className="text-violet-600">{m[2]}</span>);
+          parts.push(<span key={key++} className="text-gray-500">{m[3]}</span>);
+          parts.push(<span key={key++} className="text-emerald-700">{m[4]}{m[5]}{m[6]}</span>);
+        } else {
+          parts.push(<span key={key++} className="text-gray-400">{a}</span>);
+        }
+      });
+    }
+
+    parts.push(<span key={key++} className="text-blue-500">{gt}</span>);
+    // Inline content (the URL, date, value between tags)
+    if (content) parts.push(<span key={key++} className="text-gray-800 font-medium">{content}</span>);
+
+    if (closeTag) {
+      const ctm = closeTag.match(/(<\/)([\w:.-]+)(>)/);
+      if (ctm) {
+        parts.push(<span key={key++} className="text-blue-500">{ctm[1]}</span>);
+        parts.push(<span key={key++} className="text-orange-600 font-medium">{ctm[2]}</span>);
+        parts.push(<span key={key++} className="text-blue-500">{ctm[3]}</span>);
+      }
+    }
+    if (tail) parts.push(<span key={key++} className="text-gray-400">{tail}</span>);
+    return parts;
+  }
+
+  // Fallback
+  return <span className="text-gray-500">{rest}</span>;
+}
+
+function XMLHighlighter({ xml }: { xml: string }) {
+  const lines = xml.split("\n");
+  return (
+    <div className="font-mono text-xs leading-6 w-full" style={{ minWidth: "max-content" }}>
+      {lines.map((line, i) => (
+        <div key={i} className="flex group hover:bg-orange-50/60 rounded px-1 -mx-1">
+          {/* Line number */}
+          <span className="select-none w-9 flex-shrink-0 text-right pr-4 text-gray-300 group-hover:text-gray-400 transition-colors sticky left-0 bg-white group-hover:bg-orange-50/60">
+            {i + 1}
+          </span>
+          {/* Code — nowrap so indentation is preserved */}
+          <span className="whitespace-pre">
+            {highlightXMLLine(line)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
    2. TOOL SECTION
 ══════════════════════════════════════════════════════════════ */
+type InputMode = "domain" | "manual";
+
 function ToolSection() {
+  const [inputMode, setInputMode] = useState<InputMode>("domain");
+  const [domainInput, setDomainInput] = useState("");
   const [urlInput, setURLInput] = useState("");
+  const [crawling, setCrawling] = useState(false);
+  const [crawlError, setCrawlError] = useState("");
+  const [crawledCount, setCrawledCount] = useState(0);
+
   const [settings, setSettings] = useState<Settings>({
     changefreq: "monthly",
     priority: "0.8",
@@ -578,16 +777,78 @@ function ToolSection() {
   const [copied, setCopied] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
 
-  const urlCount = urlInput
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean).length;
+  const urlCount = urlInput.split("\n").map((l) => l.trim()).filter(Boolean).length;
+
+  const [crawlSource, setCrawlSource] = useState("");
+  const [domainTouched, setDomainTouched] = useState(false);
+  const domainIsInvalid = domainTouched && domainInput.trim() !== "" && !validateDomain(domainInput);
+
+  function validateDomain(raw: string): string | null {
+    const cleaned = raw.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const domainRe = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+    if (!cleaned || !domainRe.test(cleaned)) return null;
+    return cleaned;
+  }
+
+  const crawlAbortRef = useRef<AbortController | null>(null);
+
+  async function handleCrawl() {
+    if (!domainInput.trim()) return;
+
+    const valid = validateDomain(domainInput);
+    if (!valid) {
+      setCrawlError("Please enter a valid domain (e.g. junixo.com or https://junixo.com).");
+      return;
+    }
+
+    // Abort any previous crawl in progress
+    crawlAbortRef.current?.abort();
+    const controller = new AbortController();
+    crawlAbortRef.current = controller;
+
+    setCrawling(true);
+    setCrawlError("");
+    setCrawledCount(0);
+    setCrawlSource("");
+    setURLInput("");
+    setHasGenerated(false);
+    setResult(null);
+
+    try {
+      let localCount = 0;
+      const { source } = await crawlDomainStream(
+        domainInput.trim(),
+        200,
+        (url) => {
+          localCount++;
+          setURLInput((prev) => prev ? prev + "\n" + url : url);
+          setCrawledCount(localCount);
+        },
+        (src) => setCrawlSource(src),
+        controller.signal,
+      );
+
+      if (localCount === 0) {
+        setCrawlError("No URLs found. The site may block crawlers or have no sitemap. Try entering URLs manually.");
+      } else {
+        setCrawlSource(source);
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === "AbortError") return;
+      setCrawlError("Failed to reach this domain. Check the URL or try entering URLs manually.");
+    } finally {
+      setCrawling(false);
+    }
+  }
+
+  const [mobileTab, setMobileTab] = useState<"input" | "output">("input");
 
   function handleGenerate() {
     if (!urlInput.trim()) return;
     const res = generateXML(urlInput, settings);
     setResult(res);
     setHasGenerated(true);
+    setMobileTab("output");
   }
 
   function handleCopy() {
@@ -611,186 +872,211 @@ function ToolSection() {
     URL.revokeObjectURL(url);
   }
 
-  function handleLoadSample() {
-    setURLInput(SAMPLE_URLS);
-    setHasGenerated(false);
-    setResult(null);
-  }
-
-  function handleClear() {
-    setURLInput("");
-    setHasGenerated(false);
-    setResult(null);
-  }
-
-  const selectCls =
-    "w-full text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors";
-
   return (
     <section id="tool" className="py-4 lg:py-6 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
-          <div className="bg-white rounded-3xl border border-orange-100 shadow-xl overflow-visible">
-            <div className="grid lg:grid-cols-2">
+          <div className="bg-white rounded-3xl border border-orange-100 shadow-xl overflow-hidden">
+
+            {/* Mobile tab bar — hidden on desktop */}
+            <div className="flex lg:hidden border-b border-orange-100">
+              <button
+                onClick={() => setMobileTab("input")}
+                className={`flex-1 py-3.5 text-sm font-bold transition-all border-b-2 ${mobileTab === "input" ? "text-orange-500 border-orange-500 bg-orange-50/30" : "text-gray-400 border-transparent"}`}
+              >
+                Configure
+              </button>
+              <button
+                onClick={() => setMobileTab("output")}
+                className={`flex-1 py-3.5 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${mobileTab === "output" ? "text-orange-500 border-orange-500 bg-orange-50/30" : "text-gray-400 border-transparent"}`}
+              >
+                Output
+                {hasGenerated && result && result.validCount > 0 && (
+                  <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full leading-none">
+                    {result.validCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="grid lg:grid-cols-2 lg:items-stretch">
+
               {/* ── LEFT: Input panel ── */}
-              <div className="p-8 sm:p-10 border-b lg:border-b-0 lg:border-r border-orange-100">
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-gray-900 font-black text-lg flex items-center gap-2">
-                    <span className="w-7 h-7 bg-orange-100 text-orange-500 rounded-lg flex items-center justify-center">
-                      <LinkIcon size={14} />
-                    </span>
-                    Enter Your URLs
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleLoadSample}
-                      className="text-xs text-orange-500 font-bold border border-orange-200 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
-                    >
-                      Load Example
-                    </button>
-                    {urlInput && (
-                      <button
-                        onClick={handleClear}
-                        className="text-xs text-gray-500 font-bold border border-gray-200 bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
+              <div className={`p-4 sm:p-8 lg:p-10 lg:border-r border-orange-100 ${mobileTab === "output" ? "hidden lg:block" : "block"}`}>
+
+                {/* Mode toggle */}
+                <div className="flex gap-2 mb-6 bg-gray-100 rounded-xl p-1">
+                  <button
+                    onClick={() => { setInputMode("domain"); setHasGenerated(false); setResult(null); setDomainTouched(false); setCrawlError(""); }}
+                    className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "domain" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                  >
+                    <GlobeIcon size={16} /> Auto-Crawl Domain
+                  </button>
+                  <button
+                    onClick={() => { setInputMode("manual"); setHasGenerated(false); setResult(null); }}
+                    className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "manual" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                  >
+                    <LinkIcon size={16} /> Enter URLs Manually
+                  </button>
                 </div>
 
-                <p className="text-xs text-gray-400 mb-3">
-                  One URL per line · Must start with http:// or https://
-                </p>
+                {/* Domain crawl input */}
+                {inputMode === "domain" && (
+                  <div className="mb-6">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      Your Domain
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                          <GlobeIcon size={16} />
+                        </span>
+                        <input
+                          type="text"
+                          value={domainInput}
+                          onChange={(e) => { setDomainInput(e.target.value); setCrawlError(""); }}
+                          onBlur={() => setDomainTouched(true)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleCrawl(); }}
+                          placeholder="junixo.com"
+                          className={`w-full pl-9 pr-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition-colors ${
+                            domainIsInvalid
+                              ? "border-red-400 focus:border-red-400 focus:ring-red-100 bg-red-50"
+                              : "border-gray-200 focus:border-orange-400 focus:ring-orange-100"
+                          }`}
+                        />
+                      </div>
+                      <button
+                        onClick={handleCrawl}
+                        disabled={!domainInput.trim() || crawling || !!domainIsInvalid}
+                        className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white font-bold px-5 py-2.5 rounded-xl transition-all text-sm whitespace-nowrap"
+                      >
+                        {crawling ? <><SpinnerIcon size={14} /> Crawling…</> : <><SearchIcon size={14} /> Crawl Site</>}
+                      </button>
+                    </div>
 
-                <textarea
-                  value={urlInput}
-                  onChange={(e) => {
-                    setURLInput(e.target.value);
-                    setHasGenerated(false);
-                  }}
-                  placeholder={
-                    "https://junixo.com/\nhttps://junixo.com/about\nhttps://junixo.com/services\nhttps://junixo.com/contact"
-                  }
-                  rows={10}
-                  className="w-full text-sm text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors resize-none font-mono leading-relaxed"
-                />
-
-                <div className="flex items-center justify-between mt-1.5 mb-6">
-                  <p className="text-xs text-gray-400">
-                    Invalid URLs are skipped automatically
-                  </p>
-                  {urlCount > 0 && (
-                    <p className="text-xs text-orange-500 font-bold">
-                      {urlCount} URL{urlCount !== 1 ? "s" : ""} detected
+                    {/* Inline domain validation error */}
+                    {domainIsInvalid && (
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <span className="text-red-400"><AlertIcon size={12} /></span>
+                        <p className="text-red-500 text-xs font-medium">Enter a valid domain like <span className="font-bold">junixo.com</span> or <span className="font-bold">https://junixo.com</span></p>
+                      </div>
+                    )}
+                    {crawlError && (
+                      <div className="flex items-start gap-2 mt-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                        <span className="text-red-400 flex-shrink-0 mt-0.5"><AlertIcon size={13} /></span>
+                        <p className="text-red-600 text-xs">{crawlError}</p>
+                      </div>
+                    )}
+                    {crawledCount > 0 && !crawlError && (
+                      <div className="flex items-center gap-2 mt-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                        <span className="text-green-500"><CheckSmall size={12} /></span>
+                        <p className="text-green-700 text-xs font-bold">
+                          {crawling ? (
+                            <><span className="text-orange-500">{crawledCount}</span> URLs found so far…</>
+                          ) : (
+                            <>{crawledCount} URLs found{crawlSource && <span className="font-normal text-green-600"> · via {crawlSource}</span>}</>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
+                      Checks sitemap.xml → robots.txt → full Playwright crawl automatically.
                     </p>
-                  )}
+                  </div>
+                )}
+
+                {/* URL textarea — always visible, label changes by mode */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h3 className="text-gray-900 font-black text-base flex items-center gap-2">
+                      <span className="w-7 h-7 bg-orange-100 text-orange-500 rounded-lg flex items-center justify-center">
+                        <LinkIcon size={14} />
+                      </span>
+                      {inputMode === "domain" ? "Crawled URLs" : "Enter Your URLs"}
+                    </h3>
+                    <button
+                      onClick={() => { setURLInput(""); setHasGenerated(false); setResult(null); setCrawledCount(0); setCrawlSource(""); crawlAbortRef.current?.abort(); setCrawling(false); }}
+                      disabled={!urlInput && !crawling}
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                    >
+                      <XIcon size={11} /> Clear all
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-3">
+                    {inputMode === "domain"
+                      ? "Crawled URLs appear here — edit freely before generating."
+                      : "One URL per line · Must start with http:// or https://"}
+                  </p>
+
+                  <textarea
+                    value={urlInput}
+                    onChange={(e) => { setURLInput(e.target.value); setHasGenerated(false); }}
+                    placeholder={inputMode === "manual" ? "https://example.com/\nhttps://example.com/about\nhttps://example.com/contact" : "Crawled URLs will appear here…"}
+                    rows={inputMode === "domain" ? 8 : 10}
+                    className="w-full text-sm text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors resize-none font-mono leading-relaxed overflow-x-auto"
+                    style={{ wordBreak: "break-all" }}
+                  />
+
+                  <div className="flex items-center justify-between mt-1.5 mb-5">
+                    <p className="text-xs text-gray-400">Invalid URLs are skipped automatically</p>
+                    {urlCount > 0 && (
+                      <p className="text-xs text-orange-500 font-bold">
+                        {urlCount} URL{urlCount !== 1 ? "s" : ""} detected
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Settings panel */}
                 <div className="bg-orange-50 rounded-2xl border border-orange-100 p-5 space-y-4">
                   <h4 className="text-gray-900 font-bold text-sm flex items-center gap-2">
-                    <span className="text-orange-400">
-                      <SettingsIcon size={15} />
-                    </span>
+                    <span className="text-orange-400"><SettingsIcon size={15} /></span>
                     Sitemap Settings
                   </h4>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Change Frequency
-                      </label>
-                      <select
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Change Frequency</label>
+                      <CustomSelect
                         value={settings.changefreq}
-                        onChange={(e) =>
-                          setSettings((s) => ({
-                            ...s,
-                            changefreq: e.target.value,
-                          }))
-                        }
-                        className={selectCls}
-                      >
-                        {CHANGEFREQ_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(v) => setSettings((s) => ({ ...s, changefreq: v }))}
+                        options={CHANGEFREQ_OPTIONS.map((o) => ({ value: o, label: o.charAt(0).toUpperCase() + o.slice(1) }))}
+                      />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Priority
-                      </label>
-                      <select
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Priority</label>
+                      <CustomSelect
                         value={settings.priority}
-                        onChange={(e) =>
-                          setSettings((s) => ({
-                            ...s,
-                            priority: e.target.value,
-                          }))
-                        }
-                        className={selectCls}
-                      >
-                        {PRIORITY_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(v) => setSettings((s) => ({ ...s, priority: v }))}
+                        options={PRIORITY_OPTIONS.map((o) => ({ value: o, label: o }))}
+                      />
                     </div>
                   </div>
 
-                  {/* Include lastmod toggle */}
                   <div>
                     <div className="flex items-center justify-between mb-2.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Include Last Modified Date
-                      </label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Include Last Modified Date</label>
                       <button
                         type="button"
-                        onClick={() =>
-                          setSettings((s) => ({
-                            ...s,
-                            includeLastmod: !s.includeLastmod,
-                          }))
-                        }
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          settings.includeLastmod
-                            ? "bg-orange-500"
-                            : "bg-gray-200"
-                        }`}
+                        onClick={() => setSettings((s) => ({ ...s, includeLastmod: !s.includeLastmod }))}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${settings.includeLastmod ? "bg-orange-500" : "bg-gray-200"}`}
                       >
-                        <span
-                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
-                          style={{
-                            transform: settings.includeLastmod
-                              ? "translateX(18px)"
-                              : "translateX(2px)",
-                          }}
-                        />
+                        <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform" style={{ transform: settings.includeLastmod ? "translateX(18px)" : "translateX(2px)" }} />
                       </button>
                     </div>
                     {settings.includeLastmod && (
-                      <input
-                        type="date"
+                      <CustomDatePicker
                         value={settings.lastmod}
-                        onChange={(e) =>
-                          setSettings((s) => ({
-                            ...s,
-                            lastmod: e.target.value,
-                          }))
-                        }
-                        className={selectCls}
+                        onChange={(v) => setSettings((s) => ({ ...s, lastmod: v }))}
                       />
                     )}
                   </div>
                 </div>
 
                 <button
-                  onClick={handleGenerate}
+                  onClick={() => { handleGenerate(); window.scrollTo({ top: document.getElementById("tool")?.offsetTop ?? 0, behavior: "smooth" }); }}
                   disabled={!urlInput.trim()}
-                  className="mt-6 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-orange-200 hover:shadow-lg hover:-translate-y-0.5 disabled:translate-y-0"
+                  className="mt-6 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-orange-200 hover:shadow-lg hover:-translate-y-0.5 disabled:translate-y-0"
                 >
                   <ZapIcon size={17} />
                   Generate XML Sitemap
@@ -798,165 +1084,133 @@ function ToolSection() {
               </div>
 
               {/* ── RIGHT: Output panel ── */}
-              <div className="p-8 sm:p-10 bg-orange-50 flex flex-col min-h-[560px]">
+              <div className={`p-6 sm:p-8 lg:p-10 bg-orange-50/60 flex flex-col lg:border-l border-orange-100 ${mobileTab === "input" ? "hidden lg:flex" : "flex"}`}>
                 {!hasGenerated ? (
-                  /* Empty state */
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+                  /* ── Empty state ── */
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
                     <div className="w-20 h-20 bg-white border-2 border-orange-100 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                      <span className="text-orange-300">
-                        <CodeIcon size={32} />
-                      </span>
+                      <span className="text-orange-300"><CodeIcon size={32} /></span>
                     </div>
-                    <h3 className="text-gray-700 font-bold text-base mb-2">
-                      Your sitemap will appear here
-                    </h3>
-                    <p className="text-gray-400 text-sm max-w-xs leading-relaxed">
-                      Paste your URLs on the left, adjust settings, then click{" "}
-                      <strong className="text-orange-500">
-                        Generate XML Sitemap
-                      </strong>
-                      .
+                    <h3 className="text-gray-700 font-bold text-base mb-2">Your sitemap will appear here</h3>
+                    <p className="text-gray-400 text-sm max-w-xs leading-relaxed mb-6">
+                      {inputMode === "domain"
+                        ? <>Crawl your domain, then click <strong className="text-orange-500">Generate XML Sitemap</strong>.</>
+                        : <>Paste URLs, adjust settings, then click <strong className="text-orange-500">Generate XML Sitemap</strong>.</>}
                     </p>
-                    <div className="mt-8 flex flex-col gap-2 w-full max-w-xs">
-                      {[
-                        "Validates each URL automatically",
-                        "Instant download as sitemap.xml",
-                        "Submit to Google Search Console",
-                      ].map((tip) => (
-                        <div
-                          key={tip}
-                          className="flex items-center gap-2 text-xs text-gray-500 bg-white rounded-xl px-4 py-2.5 border border-orange-100"
-                        >
-                          <span className="text-orange-400 flex-shrink-0">
-                            <CheckSmall size={11} />
-                          </span>
+                    {/* Mobile: button to go back to configure tab */}
+                    <button
+                      onClick={() => setMobileTab("input")}
+                      className="lg:hidden flex items-center gap-2 bg-orange-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl cursor-pointer"
+                    >
+                      ← Go to Configure
+                    </button>
+                    <div className="mt-6 flex flex-col gap-2 w-full max-w-xs">
+                      {["Validates each URL automatically", "Instant download as sitemap.xml", "Submit to Google Search Console"].map((tip) => (
+                        <div key={tip} className="flex items-center gap-2 text-xs text-gray-500 bg-white rounded-xl px-4 py-2.5 border border-orange-100">
+                          <span className="text-orange-400 flex-shrink-0"><CheckSmall size={11} /></span>
                           {tip}
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  /* Result state */
-                  <div className="flex flex-col h-full">
-                    {/* Header row */}
-                    <div className="flex items-start justify-between mb-4 gap-3">
-                      <div>
-                        <h3 className="text-gray-900 font-black text-base">
-                          Generated Sitemap
-                        </h3>
+                  <div className="flex flex-col gap-4">
+
+                    {/* ── Header ── */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-gray-900 font-black text-base truncate">Generated Sitemap</h3>
                         {result && (
                           <p className="text-xs text-gray-500 mt-0.5">
-                            <span className="text-orange-500 font-bold">
-                              {result.validCount}
-                            </span>{" "}
+                            <span className="text-orange-500 font-bold">{result.validCount}</span>{" "}
                             URL{result.validCount !== 1 ? "s" : ""} included
                             {result.invalidURLs.length > 0 && (
-                              <span className="text-red-400 ml-2">
-                                · {result.invalidURLs.length} invalid skipped
-                              </span>
+                              <span className="text-red-400 ml-2">· {result.invalidURLs.length} skipped</span>
                             )}
                           </p>
                         )}
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-1.5 flex-shrink-0">
                         <button
                           onClick={handleCopy}
-                          className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                          className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
                             copied
                               ? "bg-green-500 text-white border-green-500"
-                              : "bg-white text-gray-700 border-gray-200 hover:border-orange-300 hover:text-orange-500"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500"
                           }`}
                         >
-                          {copied ? (
-                            <>
-                              <CheckSmall size={11} /> Copied!
-                            </>
-                          ) : (
-                            <>
-                              <CopyIcon size={13} /> Copy
-                            </>
-                          )}
+                          {copied ? <><CheckSmall size={11} /> Copied!</> : <><CopyIcon size={12} /> Copy</>}
                         </button>
                         <button
                           onClick={handleDownload}
                           disabled={!result?.xml}
-                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all disabled:opacity-40"
+                          className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                          <DownloadIcon size={13} /> Download
+                          <DownloadIcon size={12} /> Download
                         </button>
                       </div>
                     </div>
 
-                    {/* Invalid URLs warning */}
+                    {/* ── Invalid URLs warning ── */}
                     {result && result.invalidURLs.length > 0 && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex gap-2.5">
-                        <span className="text-amber-500 flex-shrink-0 mt-0.5">
-                          <AlertIcon size={14} />
-                        </span>
-                        <div>
-                          <p className="text-amber-700 text-xs font-bold mb-1">
-                            {result.invalidURLs.length} URL
-                            {result.invalidURLs.length !== 1 ? "s" : ""} skipped
-                            (invalid format):
-                          </p>
-                          <ul className="text-amber-600 text-xs space-y-0.5">
-                            {result.invalidURLs.slice(0, 4).map((err, i) => (
-                              <li key={i} className="font-mono truncate">
-                                {err}
-                              </li>
-                            ))}
-                            {result.invalidURLs.length > 4 && (
-                              <li>...and {result.invalidURLs.length - 4} more</li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* No valid URLs */}
-                    {result && result.validCount === 0 && (
-                      <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-                        <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                          <span className="text-red-400">
-                            <AlertIcon size={24} />
-                          </span>
-                        </div>
-                        <h4 className="text-gray-700 font-bold text-sm mb-1">
-                          No valid URLs found
-                        </h4>
-                        <p className="text-gray-400 text-xs max-w-[220px]">
-                          Ensure each URL starts with{" "}
-                          <code className="bg-white px-1 py-0.5 rounded text-gray-600">
-                            https://
-                          </code>
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-2.5">
+                        <span className="text-amber-500 flex-shrink-0 mt-0.5"><AlertIcon size={13} /></span>
+                        <p className="text-amber-700 text-xs">
+                          <span className="font-bold">{result.invalidURLs.length} URL{result.invalidURLs.length !== 1 ? "s" : ""} skipped</span>
+                          {" — "}invalid format (must start with https://)
                         </p>
                       </div>
                     )}
 
-                    {/* XML output */}
+                    {/* ── No valid URLs ── */}
+                    {result && result.validCount === 0 && (
+                      <div className="flex flex-col items-center justify-center text-center py-12">
+                        <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                          <span className="text-red-400"><AlertIcon size={22} /></span>
+                        </div>
+                        <h4 className="text-gray-700 font-bold text-sm mb-1">No valid URLs found</h4>
+                        <p className="text-gray-400 text-xs">Ensure each URL starts with <code className="text-orange-500">https://</code></p>
+                      </div>
+                    )}
+
+                    {/* ── XML Code Block ── */}
                     {result && result.validCount > 0 && (
                       <>
-                        <div className="flex-1 relative">
-                          <pre className="h-full min-h-[280px] max-h-[360px] overflow-auto bg-gray-900 text-green-300 text-xs font-mono rounded-2xl p-5 leading-relaxed whitespace-pre scrollbar-thin">
-                            {result.xml}
-                          </pre>
+                        {/* Chrome bar */}
+                        <div className="bg-gray-100 rounded-t-2xl border border-b-0 border-gray-200 px-4 py-2.5 flex items-center gap-3">
+                          <div className="flex gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                          </div>
+                          <span className="text-gray-400 text-xs font-mono flex-1">sitemap.xml</span>
+                          <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+                            {result.validCount} URLs
+                          </span>
+                        </div>
+
+                        {/* Code area */}
+                        <style>{`
+                          .xml-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+                          .xml-scroll::-webkit-scrollbar-track { background: #f3f4f6; }
+                          .xml-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+                          .xml-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+                        `}</style>
+                        <div
+                          className="xml-scroll overflow-auto rounded-b-2xl border border-gray-200 bg-white"
+                          style={{ height: "clamp(300px, 50vh, 480px)" }}
+                        >
+                          <div className="p-5">
+                            <XMLHighlighter xml={result.xml} />
+                          </div>
                         </div>
 
                         {/* Footer hint */}
-                        <div className="mt-4 flex items-start gap-2 text-xs text-gray-500 bg-white rounded-xl px-4 py-3 border border-orange-100">
-                          <span className="text-orange-400 flex-shrink-0 mt-0.5">
-                            <InfoIcon size={13} />
-                          </span>
-                          <p>
-                            Upload{" "}
-                            <code className="bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded text-orange-600 text-[11px]">
-                              sitemap.xml
-                            </code>{" "}
-                            to your website root, then submit the URL to{" "}
-                            <span className="font-semibold text-gray-700">
-                              Google Search Console
-                            </span>{" "}
-                            to help Google index your pages faster.
+                        <div className="flex items-start gap-2 bg-white rounded-xl border border-orange-100 px-4 py-3">
+                          <span className="text-orange-400 flex-shrink-0 mt-0.5"><InfoIcon size={13} /></span>
+                          <p className="text-gray-500 text-xs leading-relaxed">
+                            Upload <code className="bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded text-orange-500 text-[11px]">sitemap.xml</code> to your website root, then submit the URL to{" "}
+                            <span className="font-semibold text-gray-700">Google Search Console</span> to help Google index your pages faster.
                           </p>
                         </div>
                       </>
@@ -977,10 +1231,10 @@ function ToolSection() {
 ══════════════════════════════════════════════════════════════ */
 const features = [
   {
-    icon: <ZapIcon size={22} />,
+    icon: <GlobeIcon size={22} />,
     color: "bg-orange-100 text-orange-500",
-    title: "Instant Generation",
-    desc: "Paste hundreds of URLs and get a valid, download-ready XML sitemap in under a second — no waiting, no server calls.",
+    title: "Auto-Crawl Your Domain",
+    desc: "Just enter your domain and we'll fetch your sitemap.xml, sitemap_index.xml, or robots.txt to pull all URLs automatically — no manual pasting needed.",
   },
   {
     icon: <ShieldCheckIcon size={22} />,
@@ -1019,34 +1273,21 @@ function FeaturesSection() {
     <section className="py-20 lg:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-2xl mx-auto mb-14">
-          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-50 px-4 py-1.5 rounded-full mb-3">
-            Why Use This Tool
-          </span>
+          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-50 px-4 py-1.5 rounded-full mb-3">Why Use This Tool</span>
           <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
-            Everything You Need to{" "}
-            <span className="text-orange-500">Index Faster</span>
+            Everything You Need to <span className="text-orange-500">Index Faster</span>
           </h2>
           <p className="text-gray-500 mt-4 text-base leading-relaxed">
-            A sitemap helps search engines discover your pages. This tool makes
-            creating one take seconds, not hours.
+            A sitemap helps search engines discover your pages. This tool makes creating one take seconds, not hours.
           </p>
         </FadeIn>
-
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((f, i) => (
             <FadeIn key={f.title} delay={i * 60}>
               <div className="group bg-white rounded-2xl border border-gray-100 hover:border-orange-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
-                <div
-                  className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110`}
-                >
-                  {f.icon}
-                </div>
-                <h3 className="text-gray-900 font-bold text-base mb-2">
-                  {f.title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed flex-1">
-                  {f.desc}
-                </p>
+                <div className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110`}>{f.icon}</div>
+                <h3 className="text-gray-900 font-bold text-base mb-2">{f.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed flex-1">{f.desc}</p>
               </div>
             </FadeIn>
           ))}
@@ -1057,14 +1298,14 @@ function FeaturesSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   4. HOW TO USE — Process steps
+   4. HOW IT WORKS
 ══════════════════════════════════════════════════════════════ */
 const steps = [
   {
     num: "01",
-    icon: <LinkIcon size={20} />,
-    title: "Paste Your URLs",
-    desc: "Enter your page URLs — one per line — directly into the input box. You can paste from a spreadsheet, crawl export, or type them manually.",
+    icon: <GlobeIcon size={20} />,
+    title: "Enter Your Domain",
+    desc: "Type your domain (e.g. junixo.com) and click Crawl Site. We'll automatically fetch all URLs from your sitemap.xml or robots.txt.",
   },
   {
     num: "02",
@@ -1080,7 +1321,7 @@ const steps = [
   },
   {
     num: "04",
-    icon: <GlobeIcon size={20} />,
+    icon: <SearchIcon size={20} />,
     title: "Submit to Google",
     desc: "Download sitemap.xml, upload it to your website root (e.g. yourdomain.com/sitemap.xml), then submit the URL in Google Search Console.",
   },
@@ -1091,66 +1332,40 @@ function HowItWorksSection() {
     <section className="py-20 lg:py-28 bg-orange-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-2xl mx-auto mb-14">
-          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-3">
-            How It Works
-          </span>
+          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-3">How It Works</span>
           <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
-            From URLs to Indexed in{" "}
-            <span className="text-orange-500">4 Simple Steps</span>
+            From Domain to Indexed in <span className="text-orange-500">4 Simple Steps</span>
           </h2>
-          <p className="text-gray-500 mt-4 text-base">
-            Generate and submit your sitemap in under 5 minutes.
-          </p>
+          <p className="text-gray-500 mt-4 text-base">Generate and submit your sitemap in under 5 minutes.</p>
         </FadeIn>
 
-        {/* Desktop horizontal */}
         <FadeIn>
           <div className="hidden lg:grid grid-cols-4 gap-0 relative mb-4">
             <div className="absolute top-10 left-[12%] right-[12%] h-0.5 bg-orange-100" />
             {steps.map((step) => (
-              <div
-                key={step.num}
-                className="relative flex flex-col items-center text-center px-6 group"
-              >
+              <div key={step.num} className="relative flex flex-col items-center text-center px-6 group">
                 <div className="relative z-10 w-20 h-20 rounded-full bg-white border-2 border-orange-100 group-hover:border-orange-500 group-hover:bg-orange-500 flex flex-col items-center justify-center mb-5 transition-all duration-300 shadow-sm group-hover:shadow-lg group-hover:shadow-orange-200">
-                  <span className="text-orange-400 group-hover:text-white transition-colors">
-                    {step.icon}
-                  </span>
-                  <span className="text-[9px] font-black text-orange-300 group-hover:text-orange-100 tracking-widest transition-colors">
-                    {step.num}
-                  </span>
+                  <span className="text-orange-400 group-hover:text-white transition-colors">{step.icon}</span>
+                  <span className="text-[9px] font-black text-orange-300 group-hover:text-orange-100 tracking-widest transition-colors">{step.num}</span>
                 </div>
-                <h3 className="text-gray-900 font-bold text-sm mb-2 leading-tight">
-                  {step.title}
-                </h3>
-                <p className="text-gray-400 text-xs leading-relaxed">
-                  {step.desc}
-                </p>
+                <h3 className="text-gray-900 font-bold text-sm mb-2 leading-tight">{step.title}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
         </FadeIn>
 
-        {/* Mobile vertical */}
         <div className="lg:hidden space-y-4">
           {steps.map((step, i) => (
             <FadeIn key={step.num} delay={i * 70}>
               <div className="flex gap-4 bg-white rounded-2xl p-5 border border-orange-100 shadow-sm">
-                <div className="w-11 h-11 rounded-xl bg-orange-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-orange-200">
-                  {step.icon}
-                </div>
+                <div className="w-11 h-11 rounded-xl bg-orange-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-orange-200">{step.icon}</div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-orange-400 text-[10px] font-black tracking-widest">
-                      {step.num}
-                    </span>
-                    <h3 className="text-gray-900 font-bold text-sm">
-                      {step.title}
-                    </h3>
+                    <span className="text-orange-400 text-[10px] font-black tracking-widest">{step.num}</span>
+                    <h3 className="text-gray-900 font-bold text-sm">{step.title}</h3>
                   </div>
-                  <p className="text-gray-500 text-xs leading-relaxed">
-                    {step.desc}
-                  </p>
+                  <p className="text-gray-500 text-xs leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             </FadeIn>
@@ -1162,34 +1377,14 @@ function HowItWorksSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   5. WHAT IS A SITEMAP — Educational section
+   5. WHAT IS A SITEMAP
 ══════════════════════════════════════════════════════════════ */
 function WhatIsSection() {
   const rows = [
-    {
-      icon: <SearchIcon size={22} />,
-      color: "bg-blue-100 text-blue-600",
-      title: "Helps Search Engines Discover Pages",
-      desc: "A sitemap tells Google and Bing every URL on your site — especially useful for large sites, new pages, or pages that aren't linked from anywhere else.",
-    },
-    {
-      icon: <ClockIcon size={22} />,
-      color: "bg-orange-100 text-orange-500",
-      title: "Speeds Up Indexing",
-      desc: "When you update content or publish new pages, submitting a sitemap signals to search engines to re-crawl your site faster — reducing the lag before it appears in search results.",
-    },
-    {
-      icon: <BarChartIcon size={22} />,
-      color: "bg-purple-100 text-purple-600",
-      title: "Supports SEO Priority Signals",
-      desc: "Priority and change frequency tags give hints to crawlers about which pages matter most and how often to revisit them — giving you a small but meaningful SEO edge.",
-    },
-    {
-      icon: <ShieldCheckIcon size={22} />,
-      color: "bg-green-100 text-green-600",
-      title: "Essential for New or Large Sites",
-      desc: "New websites lack backlinks, making it hard for crawlers to find all pages. A sitemap is the fastest way to get every page in front of search engines from day one.",
-    },
+    { icon: <SearchIcon size={22} />, color: "bg-blue-100 text-blue-600", title: "Helps Search Engines Discover Pages", desc: "A sitemap tells Google and Bing every URL on your site — especially useful for large sites, new pages, or pages that aren't linked from anywhere else." },
+    { icon: <ClockIcon size={22} />, color: "bg-orange-100 text-orange-500", title: "Speeds Up Indexing", desc: "When you update content or publish new pages, submitting a sitemap signals to search engines to re-crawl your site faster — reducing the lag before it appears in search results." },
+    { icon: <BarChartIcon size={22} />, color: "bg-purple-100 text-purple-600", title: "Supports SEO Priority Signals", desc: "Priority and change frequency tags give hints to crawlers about which pages matter most and how often to revisit them — giving you a small but meaningful SEO edge." },
+    { icon: <ShieldCheckIcon size={22} />, color: "bg-green-100 text-green-600", title: "Essential for New or Large Sites", desc: "New websites lack backlinks, making it hard for crawlers to find all pages. A sitemap is the fastest way to get every page in front of search engines from day one." },
   ];
 
   return (
@@ -1197,43 +1392,24 @@ function WhatIsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <FadeIn direction="left">
-            <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-50 px-4 py-1.5 rounded-full mb-4">
-              What Is an XML Sitemap?
-            </span>
+            <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-50 px-4 py-1.5 rounded-full mb-4">What Is an XML Sitemap?</span>
             <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-5">
-              Why Every Website{" "}
-              <span className="text-orange-500">Needs One</span>
+              Why Every Website <span className="text-orange-500">Needs One</span>
             </h2>
             <p className="text-gray-500 text-base leading-relaxed mb-8">
-              An XML sitemap is a file that lists every important page on your
-              website, along with metadata about each page — like when it was
-              last updated, how often it changes, and its priority relative to
-              other pages. Search engines use this file as a roadmap to find and
-              index your content faster and more completely.
+              An XML sitemap is a file that lists every important page on your website, along with metadata about each page — like when it was last updated, how often it changes, and its priority relative to other pages. Search engines use this file as a roadmap to find and index your content faster and more completely.
             </p>
-            <a
-              href="#tool"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-md shadow-orange-200 hover:-translate-y-0.5 text-sm"
-            >
+            <a href="#tool" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-md shadow-orange-200 hover:-translate-y-0.5 text-sm">
               Generate Mine Now <ArrowRight />
             </a>
           </FadeIn>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {rows.map((row, i) => (
               <FadeIn key={row.title} delay={i * 70}>
                 <div className="bg-white rounded-2xl border border-gray-100 hover:border-orange-200 p-5 hover:shadow-md transition-all duration-300 h-full">
-                  <div
-                    className={`w-10 h-10 rounded-xl ${row.color} flex items-center justify-center mb-3`}
-                  >
-                    {row.icon}
-                  </div>
-                  <h3 className="text-gray-900 font-bold text-sm mb-1.5">
-                    {row.title}
-                  </h3>
-                  <p className="text-gray-500 text-xs leading-relaxed">
-                    {row.desc}
-                  </p>
+                  <div className={`w-10 h-10 rounded-xl ${row.color} flex items-center justify-center mb-3`}>{row.icon}</div>
+                  <h3 className="text-gray-900 font-bold text-sm mb-1.5">{row.title}</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">{row.desc}</p>
                 </div>
               </FadeIn>
             ))}
@@ -1248,95 +1424,39 @@ function WhatIsSection() {
    6. FAQ
 ══════════════════════════════════════════════════════════════ */
 const faqs = [
-  {
-    q: "How many URLs can I add to a sitemap?",
-    a: "The official sitemaps.org specification allows up to 50,000 URLs per sitemap file and up to 50MB uncompressed. For sites larger than 50,000 URLs, you'd split them into multiple sitemap files and reference them in a sitemap index file.",
-  },
-  {
-    q: "What should I set the priority to?",
-    a: "Priority is relative to other pages on your site, not globally. Your homepage typically gets 1.0, key service or product pages 0.8–0.9, blog articles 0.6–0.7, and less important pages 0.3–0.5. Most search engines treat all values equally, but it's good practice.",
-  },
-  {
-    q: "What change frequency should I choose?",
-    a: "Use 'daily' for homepages and frequently updated content like blogs, 'weekly' for service or product pages, 'monthly' for static pages, and 'yearly' for pages that rarely change. Search engines treat this as a hint, not a strict instruction.",
-  },
-  {
-    q: "Where do I upload my sitemap.xml file?",
-    a: "Upload sitemap.xml to the root of your website — i.e. yourdomain.com/sitemap.xml. Then declare it in your robots.txt file by adding 'Sitemap: https://yourdomain.com/sitemap.xml' and submit it in Google Search Console under Sitemaps.",
-  },
-  {
-    q: "Do I need a sitemap if my site is small?",
-    a: "Even small sites benefit from a sitemap. For brand-new websites with few backlinks, it's especially important — it's often the fastest way to get all your pages indexed by Google rather than waiting for crawlers to discover them naturally.",
-  },
-  {
-    q: "Does this tool work with dynamic websites?",
-    a: "Yes — you can paste URLs from any source, whether they're from a static site, a CMS like WordPress, or a dynamic web app. Just ensure all URLs are absolute (starting with https://) and point to publicly accessible pages.",
-  },
+  { q: "How does the auto-crawl feature work?", a: "When you enter your domain, the tool checks your sitemap.xml, sitemap_index.xml, and robots.txt in that order to extract all listed URLs. If none of those files are found, it scrapes internal links from your homepage as a fallback. Note: some sites block external crawlers, so manual input is always available as a fallback." },
+  { q: "How many URLs can I add to a sitemap?", a: "The official sitemaps.org specification allows up to 50,000 URLs per sitemap file and up to 50MB uncompressed. For sites larger than 50,000 URLs, you'd split them into multiple sitemap files and reference them in a sitemap index file." },
+  { q: "What should I set the priority to?", a: "Priority is relative to other pages on your site, not globally. Your homepage typically gets 1.0, key service or product pages 0.8–0.9, blog articles 0.6–0.7, and less important pages 0.3–0.5. Most search engines treat all values equally, but it's good practice." },
+  { q: "What change frequency should I choose?", a: "Use 'daily' for homepages and frequently updated content like blogs, 'weekly' for service or product pages, 'monthly' for static pages, and 'yearly' for pages that rarely change. Search engines treat this as a hint, not a strict instruction." },
+  { q: "Where do I upload my sitemap.xml file?", a: "Upload sitemap.xml to the root of your website — i.e. yourdomain.com/sitemap.xml. Then declare it in your robots.txt file by adding 'Sitemap: https://yourdomain.com/sitemap.xml' and submit it in Google Search Console under Sitemaps." },
+  { q: "Does this tool work with dynamic websites?", a: "Yes — you can paste URLs from any source, whether they're from a static site, a CMS like WordPress, or a dynamic web app. Just ensure all URLs are absolute (starting with https://) and point to publicly accessible pages." },
 ];
 
 function FAQSection() {
   const [open, setOpen] = useState<number | null>(null);
-
   return (
     <section className="py-20 lg:py-24 bg-orange-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center mb-12">
-          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-3">
-            FAQ
-          </span>
+          <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-3">FAQ</span>
           <h2 className="text-3xl lg:text-4xl font-black text-gray-900">
-            Sitemap{" "}
-            <span className="text-orange-500">Questions Answered</span>
+            Sitemap <span className="text-orange-500">Questions Answered</span>
           </h2>
         </FadeIn>
-
         <FadeIn delay={80}>
           <div className="bg-white rounded-3xl border border-orange-100 p-6 sm:p-8 space-y-3 shadow-sm">
             {faqs.map((faq, i) => (
-              <div
-                key={i}
-                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
-                  open === i
-                    ? "border-orange-300 bg-orange-50"
-                    : "border-gray-100 bg-white"
-                }`}
-              >
-                <button
-                  onClick={() => setOpen(open === i ? null : i)}
-                  className="cursor-pointer w-full flex items-center justify-between px-6 py-4 text-left gap-4"
-                >
-                  <span className="text-gray-900 font-bold text-sm sm:text-base">
-                    {faq.q}
-                  </span>
-                  <span
-                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      open === i
-                        ? "bg-orange-500 text-white rotate-45"
-                        : "bg-orange-100 text-orange-500"
-                    }`}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
+              <div key={i} className={`border rounded-2xl overflow-hidden transition-all duration-300 ${open === i ? "border-orange-300 bg-orange-50" : "border-gray-100 bg-white"}`}>
+                <button onClick={() => setOpen(open === i ? null : i)} className="cursor-pointer w-full flex items-center justify-between px-6 py-4 text-left gap-4">
+                  <span className="text-gray-900 font-bold text-sm sm:text-base">{faq.q}</span>
+                  <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${open === i ? "bg-orange-500 text-white rotate-45" : "bg-orange-100 text-orange-500"}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
                   </span>
                 </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    open === i ? "max-h-40 pb-5" : "max-h-0"
-                  }`}
-                >
-                  <p className="px-6 text-gray-500 text-sm leading-relaxed">
-                    {faq.a}
-                  </p>
+                <div className={`overflow-hidden transition-all duration-300 ${open === i ? "max-h-48 pb-5" : "max-h-0"}`}>
+                  <p className="px-6 text-gray-500 text-sm leading-relaxed">{faq.a}</p>
                 </div>
               </div>
             ))}
@@ -1356,43 +1476,25 @@ function CTABanner() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl px-8 sm:px-12 lg:px-16 py-14 lg:py-16 text-center shadow-2xl shadow-orange-200">
-            {/* BG circles */}
-            <div className="absolute top-0 right-0 w-72 h-72 bg-white opacity-5 rounded-full"
-              style={{ transform: "translate(30%,-30%)" }} />
-            <div className="absolute bottom-0 left-0 w-56 h-56 bg-white opacity-5 rounded-full"
-              style={{ transform: "translate(-25%,25%)" }} />
-
+            <div className="absolute top-0 right-0 w-72 h-72 bg-white opacity-5 rounded-full" style={{ transform: "translate(30%,-30%)" }} />
+            <div className="absolute bottom-0 left-0 w-56 h-56 bg-white opacity-5 rounded-full" style={{ transform: "translate(-25%,25%)" }} />
             <div className="relative">
-              <span className="inline-block text-orange-100 text-xs font-bold uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full mb-5 border border-white/20">
-                Need Help With SEO?
-              </span>
+              <span className="inline-block text-orange-100 text-xs font-bold uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full mb-5 border border-white/20">Need Help With SEO?</span>
               <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-4">
-                A Sitemap Is Just the Start.
-                <br className="hidden sm:block" />
-                Let's Build Your Full{" "}
-                <span className="text-orange-200">SEO Strategy.</span>
+                A Sitemap Is Just the Start.<br className="hidden sm:block" />
+                Let's Build Your Full <span className="text-orange-200">SEO Strategy.</span>
               </h2>
               <p className="text-orange-100 text-base leading-relaxed max-w-xl mx-auto mb-8">
-                Our SEO team handles everything from technical audits and
-                on-page optimisation to content strategy and link building —
-                turning organic search into your biggest growth channel.
+                Our SEO team handles everything from technical audits and on-page optimisation to content strategy and link building — turning organic search into your biggest growth channel.
               </p>
-
               <div className="flex flex-wrap gap-3 justify-center">
-                <a
-                  href="/get-a-quote"
-                  className="inline-flex items-center gap-2 bg-white text-orange-600 hover:bg-orange-50 font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg hover:-translate-y-0.5"
-                >
+                <a href="/get-a-quote" className="inline-flex items-center gap-2 bg-white text-orange-600 hover:bg-orange-50 font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg hover:-translate-y-0.5">
                   Get a Free SEO Audit <ArrowRight />
                 </a>
-                <a
-                  href="/services/seo"
-                  className="inline-flex items-center gap-2 border-2 border-white/40 hover:border-white text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5"
-                >
+                <a href="/services/seo" className="inline-flex items-center gap-2 border-2 border-white/40 hover:border-white text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5">
                   View SEO Services
                 </a>
               </div>
-
             </div>
           </div>
         </FadeIn>

@@ -24,13 +24,13 @@ export async function POST(req: Request) {
   const telegramMessage = `
 🚀 *New Lead — Junixo Digital*
 
-👤 *Name:*        ${lead.full_name ?? "—"}
-📧 *Email:*       ${lead.email ?? "—"}
-📞 *Phone:*       ${lead.phone ?? "—"}
-🌐 *Website:*     ${lead.website_url ?? "—"}
-🎯 *Service:*     ${lead.service ?? "—"}
+👤 *Name:* ${lead.full_name ?? "—"}
+📧 *Email:* ${lead.email ?? "—"}
+📞 *Phone:* ${lead.phone ?? "—"}
+🌐 *Website:* ${lead.website_url ?? "—"}
+🎯 *Service:* ${lead.service ?? "—"}
 📄 *Source Page:* ${lead.source_page ?? "—"}
-🕐 *Received:*    ${createdAt}
+🕐 *Received:* ${createdAt}
 
 💬 *Message:*
 ${lead.message ?? "—"}
