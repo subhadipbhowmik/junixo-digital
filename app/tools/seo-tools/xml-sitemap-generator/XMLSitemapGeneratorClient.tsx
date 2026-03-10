@@ -230,10 +230,7 @@ function generateXML(rawInput: string, settings: Settings): GenerateResult {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CRAWL UTILITY — reads SSE stream from GET /api/crawl
-   Calls onUrl(url) for each URL as it arrives in real-time
-   Calls onSource(source) once the source is known
-   Returns final count
+   CRAWL UTILITY
 ══════════════════════════════════════════════════════════════ */
 async function crawlDomainStream(
   domain: string,
@@ -288,7 +285,6 @@ function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-white pt-16 pb-16 lg:pt-20 lg:pb-20">
-      {/* BG blobs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-50 rounded-full opacity-70" style={{ transform: "translate(30%,-30%)" }} />
         <div className="absolute bottom-0 left-0 w-[320px] h-[320px] bg-pink-50 rounded-full opacity-50" style={{ transform: "translate(-25%,25%)" }} />
@@ -298,7 +294,6 @@ function Hero() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-10" style={{ opacity: mounted ? 1 : 0, transition: "all 0.5s ease 0.1s" }}>
           <a href="/" className="hover:text-orange-500 transition-colors">Home</a>
           <span>/</span>
@@ -308,7 +303,6 @@ function Hero() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left */}
           <div>
             <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-full px-4 py-1.5 mb-6" style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(16px)", transition: "all 0.5s ease 0.15s" }}>
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
@@ -346,7 +340,6 @@ function Hero() {
               </a>
             </div>
 
-            {/* Trust row — with avatars */}
             <div className="flex flex-wrap items-center gap-5 mt-10 pt-8 border-t border-gray-100" style={{ opacity: mounted ? 1 : 0, transition: "all 0.55s ease 0.54s" }}>
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-2">
@@ -518,17 +511,14 @@ function CustomDatePicker({
   value,
   onChange,
 }: {
-  value: string;  // "YYYY-MM-DD"
+  value: string;
   onChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  // Parse current value
   const parsed = value ? new Date(value + "T00:00:00") : new Date();
   const [viewYear,  setViewYear]  = useState(parsed.getFullYear());
   const [viewMonth, setViewMonth] = useState(parsed.getMonth());
-
   const selectedDate = value ? new Date(value + "T00:00:00") : null;
 
   useEffect(() => {
@@ -539,16 +529,13 @@ function CustomDatePicker({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Format display
   const display = selectedDate
     ? selectedDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
     : "Select date";
 
-  // Build calendar grid
   const firstDay  = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-  // Pad to full weeks
   while (cells.length % 7 !== 0) cells.push(null);
 
   function selectDay(day: number) {
@@ -597,7 +584,6 @@ function CustomDatePicker({
           className="absolute z-50 mt-1.5 left-0 bg-white border border-gray-100 rounded-2xl shadow-xl p-4 w-72"
           style={{ animation: "dropIn 0.15s ease" }}
         >
-          {/* Month nav */}
           <div className="flex items-center justify-between mb-3">
             <button type="button" onClick={prevMonth} className="w-8 h-8 rounded-lg hover:bg-orange-50 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors cursor-pointer">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -608,14 +594,12 @@ function CustomDatePicker({
             </button>
           </div>
 
-          {/* Day headers */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS.map((d) => (
               <div key={d} className="text-center text-[10px] font-bold text-gray-400 uppercase py-1">{d}</div>
             ))}
           </div>
 
-          {/* Calendar cells */}
           <div className="grid grid-cols-7 gap-y-0.5">
             {cells.map((day, i) => (
               <div key={i} className="flex items-center justify-center">
@@ -640,7 +624,6 @@ function CustomDatePicker({
             ))}
           </div>
 
-          {/* Today shortcut */}
           <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
             <button
               type="button"
@@ -663,21 +646,19 @@ function CustomDatePicker({
 
 /* ══════════════════════════════════════════════════════════════
    XML SYNTAX HIGHLIGHTER
-   Renders XML with per-token coloring + line numbers.
-   No external lib — pure React.
+   FIX: Uses word-break / overflow-wrap to prevent horizontal overflow.
+   Line content now wraps instead of escaping the container.
 ══════════════════════════════════════════════════════════════ */
 function highlightXMLLine(line: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let rest = line;
   let key  = 0;
 
-  // XML declaration  <?xml ... ?>
   if (/^\s*<\?xml/.test(rest)) {
     parts.push(<span key={key++} className="text-gray-400 italic">{rest}</span>);
     return parts;
   }
 
-  // Closing tag  </tagname>
   const closing = rest.match(/^(\s*)(<\/)([\w:.-]+)(>)(.*)$/);
   if (closing) {
     const [, indent, open, tag, close, tail] = closing;
@@ -689,7 +670,6 @@ function highlightXMLLine(line: string): React.ReactNode {
     return parts;
   }
 
-  // Opening/self-closing tag with optional attributes and inline content
   const full = rest.match(/^(\s*)(<)([\w:.-]+)((?:\s+[\w:.-]+=["'][^"']*["'])*\s*)(\/?>)(.*?)(<\/[\w:.-]+>)?(.*)$/);
   if (full) {
     const [, indent, lt, tag, attrs, gt, content, closeTag, tail] = full;
@@ -697,7 +677,6 @@ function highlightXMLLine(line: string): React.ReactNode {
     parts.push(<span key={key++} className="text-blue-500">{lt}</span>);
     parts.push(<span key={key++} className="text-orange-600 font-medium">{tag}</span>);
 
-    // Colour attributes
     if (attrs) {
       const attrParts = attrs.split(/(\s+[\w:.-]+=["'][^"']*["'])/g);
       attrParts.forEach((a) => {
@@ -715,7 +694,6 @@ function highlightXMLLine(line: string): React.ReactNode {
     }
 
     parts.push(<span key={key++} className="text-blue-500">{gt}</span>);
-    // Inline content (the URL, date, value between tags)
     if (content) parts.push(<span key={key++} className="text-gray-800 font-medium">{content}</span>);
 
     if (closeTag) {
@@ -730,22 +708,22 @@ function highlightXMLLine(line: string): React.ReactNode {
     return parts;
   }
 
-  // Fallback
   return <span className="text-gray-500">{rest}</span>;
 }
 
 function XMLHighlighter({ xml }: { xml: string }) {
   const lines = xml.split("\n");
   return (
-    <div className="font-mono text-xs leading-6 w-full" style={{ minWidth: "max-content" }}>
+    // FIX: removed minWidth:max-content — let container control width
+    <div className="font-mono text-xs leading-6 w-full">
       {lines.map((line, i) => (
         <div key={i} className="flex group hover:bg-orange-50/60 rounded px-1 -mx-1">
-          {/* Line number */}
-          <span className="select-none w-9 flex-shrink-0 text-right pr-4 text-gray-300 group-hover:text-gray-400 transition-colors sticky left-0 bg-white group-hover:bg-orange-50/60">
+          {/* Line number — no longer sticky (causes paint issues on mobile) */}
+          <span className="select-none w-8 flex-shrink-0 text-right pr-3 text-gray-300 group-hover:text-gray-400 transition-colors">
             {i + 1}
           </span>
-          {/* Code — nowrap so indentation is preserved */}
-          <span className="whitespace-pre">
+          {/* FIX: break-all ensures long URLs wrap instead of overflowing */}
+          <span className="whitespace-pre-wrap break-all min-w-0 flex-1">
             {highlightXMLLine(line)}
           </span>
         </div>
@@ -794,14 +772,12 @@ function ToolSection() {
 
   async function handleCrawl() {
     if (!domainInput.trim()) return;
-
     const valid = validateDomain(domainInput);
     if (!valid) {
       setCrawlError("Please enter a valid domain (e.g. junixo.com or https://junixo.com).");
       return;
     }
 
-    // Abort any previous crawl in progress
     crawlAbortRef.current?.abort();
     const controller = new AbortController();
     crawlAbortRef.current = controller;
@@ -878,7 +854,7 @@ function ToolSection() {
         <FadeIn>
           <div className="bg-white rounded-3xl border border-orange-100 shadow-xl overflow-hidden">
 
-            {/* Mobile tab bar — hidden on desktop */}
+            {/* Mobile tab bar */}
             <div className="flex lg:hidden border-b border-orange-100">
               <button
                 onClick={() => setMobileTab("input")}
@@ -904,19 +880,26 @@ function ToolSection() {
               {/* ── LEFT: Input panel ── */}
               <div className={`p-4 sm:p-8 lg:p-10 lg:border-r border-orange-100 ${mobileTab === "output" ? "hidden lg:block" : "block"}`}>
 
-                {/* Mode toggle */}
-                <div className="flex gap-2 mb-6 bg-gray-100 rounded-xl p-1">
+                {/* ─────────────────────────────────────────────────────────
+                    MODE TOGGLE — FIXED FOR MOBILE
+                    • Icons hidden on mobile (sm:inline-flex)
+                    • Text shortened on mobile via responsive spans
+                    • Reduced padding on mobile
+                ───────────────────────────────────────────────────────── */}
+                <div className="flex gap-1.5 mb-6 bg-gray-100 rounded-xl p-1">
                   <button
                     onClick={() => { setInputMode("domain"); setHasGenerated(false); setResult(null); setDomainTouched(false); setCrawlError(""); }}
-                    className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "domain" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold py-2 sm:py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "domain" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                   >
-                    <GlobeIcon size={16} /> Auto-Crawl Domain
+                    <span className="hidden sm:inline-flex flex-shrink-0"><GlobeIcon size={15} /></span>
+                    Auto-Crawl Domain
                   </button>
                   <button
                     onClick={() => { setInputMode("manual"); setHasGenerated(false); setResult(null); }}
-                    className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "manual" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold py-2 sm:py-2.5 rounded-lg transition-all cursor-pointer ${inputMode === "manual" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                   >
-                    <LinkIcon size={16} /> Enter URLs Manually
+                    <span className="hidden sm:inline-flex flex-shrink-0"><LinkIcon size={15} /></span>
+                    Enter URLs Manually
                   </button>
                 </div>
 
@@ -927,7 +910,7 @@ function ToolSection() {
                       Your Domain
                     </label>
                     <div className="flex gap-2">
-                      <div className="relative flex-1">
+                      <div className="relative flex-1 min-w-0">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                           <GlobeIcon size={16} />
                         </span>
@@ -948,17 +931,19 @@ function ToolSection() {
                       <button
                         onClick={handleCrawl}
                         disabled={!domainInput.trim() || crawling || !!domainIsInvalid}
-                        className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white font-bold px-5 py-2.5 rounded-xl transition-all text-sm whitespace-nowrap"
+                        className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white font-bold px-3 sm:px-5 py-2.5 rounded-xl transition-all text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
                       >
-                        {crawling ? <><SpinnerIcon size={14} /> Crawling…</> : <><SearchIcon size={14} /> Crawl Site</>}
+                        {crawling
+                          ? <><SpinnerIcon size={13} /><span className="hidden sm:inline">Crawling…</span><span className="sm:hidden">…</span></>
+                          : <><SearchIcon size={13} /><span className="hidden sm:inline">Crawl Site</span><span className="sm:hidden">Crawl</span></>
+                        }
                       </button>
                     </div>
 
-                    {/* Inline domain validation error */}
                     {domainIsInvalid && (
                       <div className="flex items-center gap-1.5 mt-2">
                         <span className="text-red-400"><AlertIcon size={12} /></span>
-                        <p className="text-red-500 text-xs font-medium">Enter a valid domain like <span className="font-bold">junixo.com</span> or <span className="font-bold">https://junixo.com</span></p>
+                        <p className="text-red-500 text-xs font-medium">Enter a valid domain like <span className="font-bold">junixo.com</span></p>
                       </div>
                     )}
                     {crawlError && (
@@ -985,7 +970,7 @@ function ToolSection() {
                   </div>
                 )}
 
-                {/* URL textarea — always visible, label changes by mode */}
+                {/* URL textarea */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <h3 className="text-gray-900 font-black text-base flex items-center gap-2">
@@ -1013,8 +998,7 @@ function ToolSection() {
                     onChange={(e) => { setURLInput(e.target.value); setHasGenerated(false); }}
                     placeholder={inputMode === "manual" ? "https://example.com/\nhttps://example.com/about\nhttps://example.com/contact" : "Crawled URLs will appear here…"}
                     rows={inputMode === "domain" ? 8 : 10}
-                    className="w-full text-sm text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors resize-none font-mono leading-relaxed overflow-x-auto"
-                    style={{ wordBreak: "break-all" }}
+                    className="w-full text-sm text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-colors resize-none font-mono leading-relaxed"
                   />
 
                   <div className="flex items-center justify-between mt-1.5 mb-5">
@@ -1084,9 +1068,9 @@ function ToolSection() {
               </div>
 
               {/* ── RIGHT: Output panel ── */}
-              <div className={`p-6 sm:p-8 lg:p-10 bg-orange-50/60 flex flex-col lg:border-l border-orange-100 ${mobileTab === "input" ? "hidden lg:flex" : "flex"}`}>
+              {/* FIX: Added min-w-0 and overflow-hidden to prevent panel itself from stretching */}
+              <div className={`p-4 sm:p-6 lg:p-10 bg-orange-50/60 flex flex-col lg:border-l border-orange-100 min-w-0 overflow-hidden ${mobileTab === "input" ? "hidden lg:flex" : "flex"}`}>
                 {!hasGenerated ? (
-                  /* ── Empty state ── */
                   <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
                     <div className="w-20 h-20 bg-white border-2 border-orange-100 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
                       <span className="text-orange-300"><CodeIcon size={32} /></span>
@@ -1097,7 +1081,6 @@ function ToolSection() {
                         ? <>Crawl your domain, then click <strong className="text-orange-500">Generate XML Sitemap</strong>.</>
                         : <>Paste URLs, adjust settings, then click <strong className="text-orange-500">Generate XML Sitemap</strong>.</>}
                     </p>
-                    {/* Mobile: button to go back to configure tab */}
                     <button
                       onClick={() => setMobileTab("input")}
                       className="lg:hidden flex items-center gap-2 bg-orange-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl cursor-pointer"
@@ -1114,9 +1097,9 @@ function ToolSection() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 min-w-0">
 
-                    {/* ── Header ── */}
+                    {/* Header */}
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <h3 className="text-gray-900 font-black text-base truncate">Generated Sitemap</h3>
@@ -1151,7 +1134,7 @@ function ToolSection() {
                       </div>
                     </div>
 
-                    {/* ── Invalid URLs warning ── */}
+                    {/* Invalid URLs warning */}
                     {result && result.invalidURLs.length > 0 && (
                       <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-2.5">
                         <span className="text-amber-500 flex-shrink-0 mt-0.5"><AlertIcon size={13} /></span>
@@ -1162,7 +1145,7 @@ function ToolSection() {
                       </div>
                     )}
 
-                    {/* ── No valid URLs ── */}
+                    {/* No valid URLs */}
                     {result && result.validCount === 0 && (
                       <div className="flex flex-col items-center justify-center text-center py-12">
                         <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
@@ -1173,7 +1156,7 @@ function ToolSection() {
                       </div>
                     )}
 
-                    {/* ── XML Code Block ── */}
+                    {/* XML Code Block — FIXED OVERFLOW */}
                     {result && result.validCount > 0 && (
                       <>
                         {/* Chrome bar */}
@@ -1183,24 +1166,30 @@ function ToolSection() {
                             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                           </div>
-                          <span className="text-gray-400 text-xs font-mono flex-1">sitemap.xml</span>
-                          <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+                          <span className="text-gray-400 text-xs font-mono flex-1 truncate">sitemap.xml</span>
+                          <span className="text-[10px] font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex-shrink-0">
                             {result.validCount} URLs
                           </span>
                         </div>
 
-                        {/* Code area */}
+                        {/* ─────────────────────────────────────────────────
+                            CODE AREA — KEY OVERFLOW FIXES:
+                            • overflow-x-auto on the scroll container
+                            • overflow-wrap: break-word on content
+                            • No min-width: max-content on inner div
+                            • whitespace-pre-wrap + break-all on line spans
+                        ───────────────────────────────────────────────── */}
                         <style>{`
                           .xml-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-                          .xml-scroll::-webkit-scrollbar-track { background: #f3f4f6; }
+                          .xml-scroll::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 3px; }
                           .xml-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
                           .xml-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
                         `}</style>
                         <div
-                          className="xml-scroll overflow-auto rounded-b-2xl border border-gray-200 bg-white"
+                          className="xml-scroll overflow-x-auto overflow-y-auto rounded-b-2xl border border-gray-200 bg-white w-full"
                           style={{ height: "clamp(300px, 50vh, 480px)" }}
                         >
-                          <div className="p-5">
+                          <div className="p-4 sm:p-5 w-full">
                             <XMLHighlighter xml={result.xml} />
                           </div>
                         </div>
