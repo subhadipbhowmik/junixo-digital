@@ -676,7 +676,7 @@ function TestimonialsSection() {
   const getCard = (offset: number) => testimonials[(active + offset + total) % total];
 
   return (
-    <section className="pt-20 lg:pt-28 bg-gray-50 overflow-hidden">
+    <section className="py-20 lg:py-28 bg-gray-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-xl mx-auto mb-14">
           <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest mb-3 bg-orange-50 px-4 py-1.5 rounded-full">Client Stories</span>
