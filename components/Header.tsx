@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
+import { usePathname } from "next/navigation";
 
 /* ─── NAV DATA ─────────────────────────────────────────────── */
 const megaMenus = {
@@ -14,8 +15,8 @@ const megaMenus = {
             heading: "Core Services",
             links: [
               { label: "Social Media Marketing", href: "/services/digital-marketing/social-media-marketing" },
-              { label: "PPC / Google Ads", href: "/services/ppc-google-ads" },
-              { label: "Content Marketing", href: "/services/content-marketing" },
+              { label: "PPC / Google Ads", href: "/services/digital-marketing/ppc-google-ads" },
+              { label: "Content Marketing", href: "/services/digital-marketing/content-marketing" },
               { label: "Email Marketing", href: "/services/email-marketing" },
               { label: "Influencer Marketing", href: "/services/influencer-marketing" },
             ],
@@ -655,6 +656,11 @@ function MobileTabbedSection({
 
 /* ─── MAIN HEADER ────────────────────────────────────────────── */
 export default function Header() {
+
+ const pathname = usePathname();
+
+  if (pathname.startsWith("/admin")) return null;
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

@@ -926,7 +926,7 @@ const testimonials = [
 
 function TestimonialsSection() {
   return (
-    <section className="py-20 lg:py-24 bg-orange-50">
+    <section className="pb-20 lg:pb-24 bg-orange-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-xl mx-auto mb-12">
           <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-3">Client Stories</span>
@@ -1217,7 +1217,7 @@ function FinalCTA() {
                           <input
                             id="phone"
                             type="tel"
-                            placeholder="+44 7700 900000"
+                            placeholder="+1 7700 900000"
                             value={form.phone}
                             onChange={set("phone")}
                             className={inputCls}
@@ -1296,7 +1296,7 @@ function FinalCTA() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-orange-200 hover:shadow-lg mt-1"
+                        className="w-full cursor-pointer flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-orange-200 hover:shadow-lg mt-1"
                       >
                         {loading ? (
                           <>

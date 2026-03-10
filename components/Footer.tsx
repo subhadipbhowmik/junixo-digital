@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 /* ─── SOCIALS ───────────────────────────────────────────────── */
 const socials = [
@@ -270,6 +271,9 @@ function SubscribeForm() {
 
 /* ─── FOOTER ────────────────────────────────────────────────── */
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin")) return null;
   const [activeTab, setActiveTab] = useState(0);
 
   return (
