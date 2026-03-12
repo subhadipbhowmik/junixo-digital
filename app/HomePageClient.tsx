@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 
@@ -174,12 +175,12 @@ function HeroSection() {
               className="flex flex-wrap gap-3"
               style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.5s" }}
             >
-              <a href="/get-a-quote" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:shadow-xl hover:-translate-y-0.5">
+              <Link href="/get-a-quote" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:shadow-xl hover:-translate-y-0.5">
                 Get a Free Quote <ArrowRight />
-              </a>
-              <a href="/portfolio" className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-orange-400 text-gray-700 hover:text-orange-500 font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5">
+              </Link>
+              <Link href="/portfolio" className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-orange-400 text-gray-700 hover:text-orange-500 font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5">
                 View Our Work
-              </a>
+              </Link>
             </div>
             <div
               className="flex flex-wrap items-center gap-5 mt-10 pt-8 border-t border-gray-100"
@@ -342,12 +343,12 @@ function ServicesSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((svc, i) => (
             <FadeIn key={svc.title} delay={i * 100}>
-              <a href={svc.href} className={`group block bg-white border border-gray-100 ${svc.border} rounded-2xl p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}>
+              <Link href={svc.href} className={`group block bg-white border border-gray-100 ${svc.border} rounded-2xl p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}>
                 <div className={`w-14 h-14 rounded-2xl ${svc.color} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}>{svc.icon}</div>
                 <h3 className="text-gray-900 font-bold text-lg mb-2">{svc.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-4">{svc.desc}</p>
                 <span className="inline-flex items-center gap-1.5 text-orange-500 text-sm font-bold group-hover:gap-2.5 transition-all duration-200">Learn More <ArrowRight size={14} /></span>
-              </a>
+              </Link>
             </FadeIn>
           ))}
         </div>
@@ -436,7 +437,7 @@ function CoreTechServicesSection() {
         </FadeIn>
 
         {/* ── DESKTOP: tab-list | compact-image | content ── */}
-    <div className="hidden lg:grid lg:grid-cols-[260px_300px_1fr] gap-0 bg-white lg:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="hidden lg:grid lg:grid-cols-[260px_300px_1fr] gap-0 bg-white lg:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           {/* Left tabs */}
           <div className="border-r border-gray-100 py-6">
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-6 mb-4">Service Areas</p>
@@ -487,9 +488,9 @@ function CoreTechServicesSection() {
                 </div>
               </div>
             </div>
-            <a href={active.ctaHref} className={`inline-flex items-center gap-2 text-white text-sm font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg hover:-translate-y-0.5 self-start ${colors.btn}`}>
+            <Link href={active.ctaHref} className={`inline-flex items-center gap-2 text-white text-sm font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg hover:-translate-y-0.5 self-start ${colors.btn}`}>
               {active.ctaLabel} <ArrowRight size={14} />
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -527,9 +528,9 @@ function CoreTechServicesSection() {
                 <span key={tech} className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-600">{tech}</span>
               ))}
             </div>
-            <a href={active.ctaHref} className={`inline-flex w-full items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-full transition-all ${colors.btn}`}>
+            <Link href={active.ctaHref} className={`inline-flex w-full items-center justify-center gap-2 text-white text-sm font-bold px-5 py-3 rounded-full transition-all ${colors.btn}`}>
               {active.ctaLabel} <ArrowRight size={14} />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -558,6 +559,14 @@ const techStackDomains = [
       { name: "HubSpot", icon: <svg viewBox="0 0 24 24" width="28" height="28" fill="#FF7A59"><path d="M18.164 7.93V5.084a2.198 2.198 0 10-2.196 0V7.93a6.242 6.242 0 00-2.998 1.524L5.326 4.387a2.348 2.348 0 10-.792 1.114l7.425 5.22a6.274 6.274 0 00-.824 3.088 6.274 6.274 0 00.824 3.088l-7.425 5.22a2.348 2.348 0 10.792 1.114l7.644-5.067A6.26 6.26 0 0017.066 19.8a6.26 6.26 0 006.26-6.26 6.26 6.26 0 00-5.162-6.61zm-1.098 9.923a3.664 3.664 0 110-7.327 3.664 3.664 0 010 7.327z"/></svg> },
       { name: "Mailchimp", icon: <BrandRect bg="#FFE01B" text="MC" textColor="#241C15" /> },
       { name: "Klaviyo", icon: <BrandRect bg="#2B2B2B" text="KL" /> },
+      { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
+        { name: "Klaviyo", icon: <BrandRect bg="#2B2B2B" text="KL" /> },
+      { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
+            { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
+        { name: "Klaviyo", icon: <BrandRect bg="#2B2B2B" text="KL" /> },
+      { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
+            { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
+        { name: "Klaviyo", icon: <BrandRect bg="#2B2B2B" text="KL" /> },
       { name: "ActiveCampaign", icon: <BrandRect bg="#356AE6" text="AC" /> },
     ],
   },
@@ -649,6 +658,16 @@ function TechStackSection() {
 
   return (
     <section className="py-20 lg:py-28 bg-white">
+      <style>{`
+        .tools-scroll::-webkit-scrollbar { width: 4px; }
+        .tools-scroll::-webkit-scrollbar-track { background: #fff1eb; border-radius: 99px; }
+        .tools-scroll::-webkit-scrollbar-thumb { background: #f97316; border-radius: 99px; }
+        .tools-scroll { scrollbar-width: thin; scrollbar-color: #f97316 #fff1eb; }
+        .tools-scroll-x::-webkit-scrollbar { height: 4px; }
+        .tools-scroll-x::-webkit-scrollbar-track { background: transparent; }
+        .tools-scroll-x::-webkit-scrollbar-thumb { background: transparent; }
+        .tools-scroll-x { scrollbar-width: none; }
+      `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="text-center max-w-3xl mx-auto mb-12">
           <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest mb-3 bg-orange-50 px-4 py-1.5 rounded-full">Tools & Platforms</span>
@@ -660,9 +679,10 @@ function TechStackSection() {
           </p>
         </FadeIn>
         <FadeIn>
-          {/* Desktop */}
+          {/* ── DESKTOP ── */}
           <div className="hidden lg:flex gap-6 bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden p-6">
-            <div className="w-60 flex-shrink-0 bg-white rounded-2xl border border-gray-100 p-3 self-start">
+            {/* Sidebar nav */}
+            <div className="w-56 flex-shrink-0 bg-white rounded-2xl border border-gray-100 p-3 self-start">
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-3 pb-3 pt-1">Technology Domains</p>
               {techStackDomains.map((domain, i) => (
                 <button key={domain.id} onClick={() => setActiveDomain(i)}
@@ -675,43 +695,56 @@ function TechStackSection() {
                 </button>
               ))}
             </div>
-            <div className="flex-1" key={active.id} style={{ animation: "fadeTab 0.35s ease" }}>
-              <div className="bg-white rounded-2xl border border-gray-100 p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-500">{active.icon}</div>
+
+            {/* Content panel */}
+            <div className="flex-1 flex flex-col" key={active.id} style={{ animation: "fadeTab 0.35s ease" }}>
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col h-full">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6 flex-shrink-0">
+                  <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-500">{active.icon}</div>
                   <div>
                     <h3 className="text-gray-900 font-black text-xl">{active.title}</h3>
                     <p className="text-gray-400 text-sm">{active.subtitle}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-4 gap-4">
-                  {active.tools.map((tool) => (
-                    <div key={tool.name} className="group flex flex-col items-center gap-2.5 p-4 rounded-2xl border border-gray-100 hover:border-orange-200 hover:shadow-md hover:shadow-orange-50 transition-all duration-200 cursor-default hover:-translate-y-0.5 bg-white">
-                      <div className="w-12 h-12 flex items-center justify-center">{tool.icon}</div>
-                      <span className="text-xs font-semibold text-gray-600 text-center leading-tight group-hover:text-gray-900">{tool.name}</span>
-                    </div>
-                  ))}
+
+                {/* Scrollable tools grid — fixed height, orange scrollbar on right */}
+                <div className="tools-scroll overflow-y-auto pr-2" style={{ maxHeight: "320px" }}>
+                  <div className="grid grid-cols-4 gap-4">
+                    {active.tools.map((tool) => (
+                      <div key={tool.name} className="group flex flex-col items-center gap-2.5 p-4 rounded-2xl border border-gray-100 hover:border-orange-200 hover:shadow-md hover:shadow-orange-50 transition-all duration-200 cursor-default hover:-translate-y-0.5 bg-white">
+                        <div className="w-12 h-12 flex items-center justify-center">{tool.icon}</div>
+                        <span className="text-xs font-semibold text-gray-600 text-center leading-tight group-hover:text-gray-900">{tool.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
+
+                {/* Footer */}
+                <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between flex-shrink-0">
                   <p className="text-gray-400 text-sm">+ many more tools and platforms</p>
-                  <a href="/services" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md shadow-orange-200 hover:-translate-y-0.5">
+                  <Link href="/services" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md shadow-orange-200 hover:-translate-y-0.5">
                     Explore Solutions <ArrowRight size={14} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
-          {/* Mobile */}
+
+          {/* ── MOBILE ── */}
           <div className="lg:hidden">
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-5" style={{ scrollbarWidth: "none" }}>
+            {/* Horizontal tab pills */}
+            <div className="tools-scroll-x flex gap-2 overflow-x-auto pb-3 mb-5">
               {techStackDomains.map((domain, i) => (
                 <button key={domain.id} onClick={() => setActiveDomain(i)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${i === activeDomain ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-200" : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"}`}>
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${i === activeDomain ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-200" : "bg-white text-gray-600 border-gray-200"}`}>
                   <span>{domain.icon}</span>{domain.label}
                 </button>
               ))}
             </div>
+
             <div className="bg-white rounded-2xl border border-gray-100 p-5" key={active.id + "-m"} style={{ animation: "fadeTab 0.35s ease" }}>
+              {/* Header */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-500">{active.icon}</div>
                 <div>
@@ -719,18 +752,23 @@ function TechStackSection() {
                   <p className="text-gray-400 text-xs">{active.subtitle}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-3">
-                {active.tools.map((tool) => (
-                  <div key={tool.name} className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border border-gray-100 bg-gray-50">
-                    <div className="w-8 h-8 flex items-center justify-center">{tool.icon}</div>
-                    <span className="text-[9px] font-semibold text-gray-600 text-center leading-tight">{tool.name}</span>
-                  </div>
-                ))}
+
+              {/* Scrollable 2-col grid — fixed height with orange scrollbar */}
+              <div className="tools-scroll overflow-y-auto" style={{ maxHeight: "360px" }}>
+                <div className="grid grid-cols-2 gap-3">
+                  {active.tools.map((tool) => (
+                    <div key={tool.name} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50">
+                      <div className="w-9 h-9 flex-shrink-0 flex items-center justify-center">{tool.icon}</div>
+                      <span className="text-xs font-semibold text-gray-700 leading-tight">{tool.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
+
               <div className="mt-5 pt-4 border-t border-gray-100">
-                <a href="/services" className="inline-flex w-full items-center justify-center gap-2 bg-orange-500 text-white text-sm font-bold px-5 py-3 rounded-full">
+                <Link href="/services" className="inline-flex w-full items-center justify-center gap-2 bg-orange-500 text-white text-sm font-bold px-5 py-3 rounded-full">
                   Explore Solutions <ArrowRight size={14} />
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -786,9 +824,9 @@ function WhyChooseSection() {
                 </div>
               ))}
             </div>
-            <a href="/about/why-us" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
+            <Link href="/about/why-us" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
               Discover Our Approach <ArrowRight />
-            </a>
+            </Link>
           </FadeIn>
         </div>
       </div>
@@ -860,29 +898,8 @@ function WhySEOSection() {
     <section className="py-20 lg:py-28 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <FadeIn>
-            <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest mb-3 bg-orange-50 px-4 py-1.5 rounded-full">Why SEO Matters</span>
-            <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-5">
-              Organic Search is the{" "}
-              <span className="text-orange-500">Highest-ROI Channel</span>{" "}
-              for Long-Term Growth
-            </h2>
-            <p className="text-gray-500 text-base leading-relaxed mb-8">
-              Over half of all web traffic comes from organic search. Businesses that invest in SEO dominate their niche, reduce customer acquisition costs, and build compounding value that paid ads simply cannot match. A strong SEO foundation means your brand is found 24/7 — without paying for every click.
-            </p>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {seoStats.map((s) => (
-                <div key={s.value} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-orange-200 hover:shadow-md transition-all duration-200">
-                  <p className="text-2xl font-black text-orange-500 mb-1">{s.value}</p>
-                  <p className="text-gray-500 text-sm leading-snug">{s.label}</p>
-                </div>
-              ))}
-            </div>
-            <a href="/services/seo" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
-              Explore Our SEO Services <ArrowRight />
-            </a>
-          </FadeIn>
-          <FadeIn delay={150}>
+          {/* Image — order-1 on mobile (shows first), order-2 on desktop (shows right) */}
+          <FadeIn delay={150} className="order-1 lg:order-2">
             <div className="relative">
               <div className="absolute inset-0 bg-orange-50 rounded-3xl transform -rotate-2" />
               <Image src="https://res.cloudinary.com/junixo/image/upload/v1773244613/home-02-why-businesses-choose-junixo_qxviuy.webp"
@@ -904,6 +921,29 @@ function WhySEOSection() {
                 <p className="text-gray-900 font-black text-base leading-tight">+290% Organic Traffic</p>
               </div>
             </div>
+          </FadeIn>
+          {/* Text — order-2 on mobile (shows second), order-1 on desktop (shows left) */}
+          <FadeIn className="order-2 lg:order-1">
+            <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest mb-3 bg-orange-50 px-4 py-1.5 rounded-full">Why SEO Matters</span>
+            <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-5">
+              Organic Search is the{" "}
+              <span className="text-orange-500">Highest-ROI Channel</span>{" "}
+              for Long-Term Growth
+            </h2>
+            <p className="text-gray-500 text-base leading-relaxed mb-8">
+              Over half of all web traffic comes from organic search. Businesses that invest in SEO dominate their niche, reduce customer acquisition costs, and build compounding value that paid ads simply cannot match. A strong SEO foundation means your brand is found 24/7 — without paying for every click.
+            </p>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {seoStats.map((s) => (
+                <div key={s.value} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-orange-200 hover:shadow-md transition-all duration-200">
+                  <p className="text-2xl font-black text-orange-500 mb-1">{s.value}</p>
+                  <p className="text-gray-500 text-sm leading-snug">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <Link href="/services/seo" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
+              Explore Our SEO Services <ArrowRight />
+            </Link>
           </FadeIn>
         </div>
       </div>
@@ -1088,9 +1128,9 @@ function IndustriesSection() {
                   </div>
 
                   {/* CTA */}
-                  <a href={ind.href} className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 self-start hover:-translate-y-0.5 shadow-sm shadow-orange-200">
+                  <Link href={ind.href} className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 self-start hover:-translate-y-0.5 shadow-sm shadow-orange-200">
                     Explore Solutions <ArrowRight size={13} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </FadeIn>
@@ -1352,7 +1392,7 @@ function BlogSection({ posts }: { posts: BlogPostPreview[] }) {
             <span className="inline-block text-orange-500 text-xs font-bold uppercase tracking-widest mb-3 bg-orange-50 px-4 py-1.5 rounded-full">Insights</span>
             <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">From the <span className="text-orange-500">Junixo Blog</span></h2>
           </div>
-          <a href="/blog" className="inline-flex items-center gap-2 text-orange-500 font-bold hover:gap-3 transition-all duration-200 flex-shrink-0">View All Articles <ArrowRight /></a>
+          <Link href="/blog" className="inline-flex items-center gap-2 text-orange-500 font-bold hover:gap-3 transition-all duration-200 flex-shrink-0">View All Articles <ArrowRight /></Link>
         </FadeIn>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post, i) => (
@@ -1366,9 +1406,9 @@ function BlogSection({ posts }: { posts: BlogPostPreview[] }) {
                   {post.category && <span className="inline-block self-start bg-orange-50 text-orange-500 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-orange-100 mb-3">{post.category}</span>}
                   <h3 className="text-gray-900 font-bold text-lg leading-snug mb-2">{post.title}</h3>
                   <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 flex-1 mb-5">{post.excerpt}</p>
-                  <a href={`/blog/${post.slug}`} className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 self-start hover:-translate-y-0.5 shadow-sm shadow-orange-200">
+                  <Link href={`/blog/${post.slug}`} className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 self-start hover:-translate-y-0.5 shadow-sm shadow-orange-200">
                     Read More <ArrowRight size={13} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </FadeIn>
@@ -1625,7 +1665,7 @@ function FAQSection() {
           <h2 className="text-3xl lg:text-4xl font-black text-gray-900">
             Questions We <span className="text-orange-500">Get Asked</span>
           </h2>
-          <p className="text-gray-500 mt-4 text-base max-w-xl mx-auto">Everything you need to know before getting started. Can't find your answer? <a href="/contact" className="text-orange-500 font-semibold hover:underline">Ask us directly.</a></p>
+          <p className="text-gray-500 mt-4 text-base max-w-xl mx-auto">Everything you need to know before getting started. Can't find your answer? <Link href="/contact" className="text-orange-500 font-semibold hover:underline">Ask us directly.</Link></p>
         </FadeIn>
         <FadeIn delay={80}>
           <div className="bg-orange-50 rounded-3xl border border-orange-100 p-6 sm:p-8 space-y-3">
