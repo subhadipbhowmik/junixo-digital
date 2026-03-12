@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import Script from "next/script";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -54,6 +55,81 @@ export default function RootLayout({
         <Footer />
 
         {/* tawk.to chat widget script */}
+
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-8L7F28GE8E"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-8L7F28GE8E');
+          `}
+        </Script>
+
+        {/* Microsoft Clarity Analytics */}
+        <Script
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "vu7j2oz6kc");
+    `,
+          }}
+        />
+
+        {/* Json LD structured data for SEO */}
+        <Script
+          id="schema-org"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://junixo.com/#organization",
+                  name: "Junixo",
+                  url: "https://junixo.com",
+                  logo: "https://junixo.com/logo.png",
+                  sameAs: [
+                    "https://twitter.com/junixolabs"
+                  ],
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    contactType: "customer support",
+                    url: "https://junixo.com/contact"
+                  }
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://junixo.com/#website",
+                  url: "https://junixo.com",
+                  name: "Junixo",
+                  publisher: {
+                    "@id": "https://junixo.com/#organization"
+                  },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: "https://junixo.com/search?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                  }
+                }
+              ]
+            })
+          }}
+        />
+
 
       </body>
     </html>

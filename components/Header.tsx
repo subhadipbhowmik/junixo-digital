@@ -509,7 +509,7 @@ function TabbedMegaMenu({
               <a
                 href={ctaButtonHref}
                 onClick={onClose}
-                className="flex-shrink-0 ml-6 flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-150"
+                className="flex-shrink-0 ml-6 flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors duration-150"
               >
                 {ctaButtonLabel} <ArrowRight />
               </a>
@@ -539,7 +539,7 @@ function SimpleMegaMenu({
     <div
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="fixed w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden"
+      className="fixed w-56 bg-white shadow-xl border border-gray-100 z-50 py-2 overflow-hidden"
       style={{
         top: 64,
         left: centerX,

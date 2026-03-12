@@ -50,13 +50,14 @@ export default function HomePage() {
       (post as any).category ??
       ((post as any).categories?.[0] ?? (post as any).tags?.[0] ?? undefined),
     // Support both `coverImage`, `image`, `heroImage`, `ogImage.url`
-    coverImage:
+    featuredImage:
+      (post as any).featuredImage ??
       (post as any).coverImage ??
       (post as any).image ??
       (post as any).heroImage ??
       (post as any).ogImage?.url ??
       undefined,
-  }));
+      }));
 
   return <HomePageClient blogPosts={blogPosts} />;
 }
