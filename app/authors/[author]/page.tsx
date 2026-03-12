@@ -167,7 +167,7 @@ export default async function AuthorPage({
             </div>
 
             {/* Stats bar */}
-            <div className="grid grid-cols-3 gap-0 border-t border-gray-100 mt-6 -mx-8">
+            {/* <div className="grid grid-cols-3 gap-0 border-t border-gray-100 mt-6 -mx-8">
               {[
                 { value: authorPosts.length.toString(), label: "Articles" },
                 { value: authorCategories.length.toString(), label: "Topics" },
@@ -184,7 +184,7 @@ export default async function AuthorPage({
                   <p className="text-gray-400 text-xs mt-0.5 font-medium">{s.label}</p>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

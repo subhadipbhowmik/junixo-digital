@@ -747,7 +747,7 @@ export default function Header() {
                     onMouseLeave={handleMouseLeave}
                   >
                     <button
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3.5 py-2 text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
                         isActive
                           ? "text-orange-500 bg-orange-50"
                           : "text-gray-700 hover:text-orange-500 hover:bg-orange-50"

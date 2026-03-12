@@ -193,23 +193,61 @@ export const mdxComponents = {
   em: (p: React.HTMLAttributes<HTMLElement>) => (
     <em className="italic text-gray-700" {...p} />
   ),
+
+  // ─── Table — full grid border on every cell ───
   table: (p: React.TableHTMLAttributes<HTMLTableElement>) => (
-    <div className="overflow-x-auto my-7 rounded-xl border border-gray-200 shadow-sm">
-      <table className="w-full text-sm border-collapse" {...p} />
+    <div style={{ overflowX: "auto", margin: "28px 0" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          borderSpacing: 0,
+          fontSize: "14px",
+          border: "1px solid #e5e7eb",
+          borderRadius: "10px",
+        }}
+        {...p}
+      />
     </div>
   ),
   thead: (p: React.HTMLAttributes<HTMLTableSectionElement>) => (
-    <thead className="bg-orange-50" {...p} />
+    <thead style={{ backgroundColor: "#fff7ed" }} {...p} />
+  ),
+  tbody: (p: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <tbody {...p} />
   ),
   th: (p: React.ThHTMLAttributes<HTMLTableCellElement>) => (
-    <th className="text-orange-700 font-bold px-5 py-3 text-left border-b border-gray-200 text-[13px] uppercase tracking-wide" {...p} />
+    <th
+      style={{
+        padding: "12px 18px",
+        textAlign: "center",
+        fontSize: "12px",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        color: "#c2410c",
+        border: "1px solid #e5e7eb",
+        whiteSpace: "nowrap",
+        backgroundColor: "#fff7ed",
+      }}
+      {...p}
+    />
   ),
   td: (p: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-    <td className="px-5 py-3 border-b border-gray-100 text-gray-600" {...p} />
+    <td
+      style={{
+        padding: "11px 18px",
+        color: "#4b5563",
+        fontSize: "14px",
+        border: "1px solid #e5e7eb",
+        verticalAlign: "middle",
+      }}
+      {...p}
+    />
   ),
-  tr: (p: React.HTMLAttributes<HTMLTableRowElement>) => (
-    <tr className="hover:bg-gray-50 transition-colors" {...p} />
-  ),
+tr: (p: React.HTMLAttributes<HTMLTableRowElement>) => (
+  <tr {...p} />
+),
 };
 
 /* ─── Helpers for auto heading IDs ─── */

@@ -37,37 +37,5 @@ export const authors: Record<string, Author> = {
       linkedin: "https://linkedin.com/in/shubhadip-bhowmik",
     },
   },
-  "sarah-mitchell": {
-    id: "sarah-mitchell",
-    name: "Sarah Mitchell",
-    bio: "Sarah is a senior SEO strategist at Junixo with 8+ years of experience helping brands rank #1 on Google. She specialises in technical SEO and content-led growth.",
-    avatar: "https://placehold.co/80x80/eff6ff/3b82f6?text=SM",
-    role: "Senior SEO Strategist",
-    social: {
-      twitter: "https://twitter.com",
-      linkedin: "https://linkedin.com",
-    },
-  },
-  "james-okafor": {
-    id: "james-okafor",
-    name: "James Okafor",
-    bio: "James leads paid media at Junixo, managing millions in ad spend. He's obsessed with ROAS optimisation and conversion-focused campaign architecture.",
-    avatar: "https://placehold.co/80x80/f0fdf4/22c55e?text=JO",
-    role: "Head of Paid Media",
-    social: {
-      twitter: "https://twitter.com",
-      linkedin: "https://linkedin.com",
-    },
-  },
-  "priya-sharma": {
-    id: "priya-sharma",
-    name: "Priya Sharma",
-    bio: "Priya is a full-stack developer and web performance specialist. She builds blazing-fast websites that rank, convert, and scale.",
-    avatar: "https://placehold.co/80x80/fdf4ff/a855f7?text=PS",
-    role: "Lead Web Developer",
-    social: {
-      linkedin: "https://linkedin.com",
-      website: "https://junixo.com",
-    },
-  },
+
 };
