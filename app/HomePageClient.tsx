@@ -114,7 +114,7 @@ function HeroSection() {
               style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.1s" }}
             >
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">HimDigitally Marketing Agency</span>
+              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">Digital Marketing Agency</span>
             </div>
             <h1
               className="text-4xl sm:text-5xl lg:text-[56px] font-black text-gray-900 leading-[1.08] tracking-tight mb-6"
