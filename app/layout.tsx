@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s | Junixo",
   },
   description:
-    "Junixo is a results-driven digital agency specialising in SEO, web development, paid media, and brand strategy. We help businesses grow online.",
+    "Junixo is a results-driven digital marketing agency specializing in SEO, web development, paid media, and brand strategy to help businesses grow online and scale faster.",
   metadataBase: new URL("https://junixo.com"),
   openGraph: {
     title: "Junixo — Digital Agency",
@@ -34,7 +34,6 @@ export const metadata: Metadata = {
     title: "Junixo — Digital Agency",
     description:
       "Results-driven digital agency helping businesses grow online through SEO, web development, and brand strategy.",
-    creator: "@junixolabs",
   },
   robots: {
     index: true,

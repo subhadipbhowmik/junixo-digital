@@ -1,6 +1,10 @@
 // components/blog/mdx-components.tsx
 import React from "react";
 import Link from "next/link";
+import { Info, AlertTriangle, Lightbulb, AlertOctagon } from "lucide-react";
+
+// External CSS
+import "./component.css";
 
 /* ─── Custom MDX block components ─── */
 
@@ -16,42 +20,48 @@ export function Callout({
   const styles = {
     info: {
       wrap: "bg-blue-50 border-blue-200",
-      icon: "ℹ️",
+      icon: Info,
+      iconColor: "text-blue-500",
       title: "text-blue-800",
       body: "text-blue-700",
     },
     warning: {
       wrap: "bg-amber-50 border-amber-200",
-      icon: "⚠️",
+      icon: AlertTriangle,
+      iconColor: "text-amber-500",
       title: "text-amber-800",
       body: "text-amber-700",
     },
     tip: {
       wrap: "bg-green-50 border-green-200",
-      icon: "💡",
+      icon: Lightbulb,
+      iconColor: "text-green-500",
       title: "text-green-800",
       body: "text-green-700",
     },
     danger: {
       wrap: "bg-red-50 border-red-200",
-      icon: "🚨",
+      icon: AlertOctagon,
+      iconColor: "text-red-500",
       title: "text-red-800",
       body: "text-red-700",
     },
   }[type];
 
+  const Icon = styles.icon;
+
   return (
-    <div className={`${styles.wrap} border rounded-xl p-5 my-6`}>
-      <div className="flex items-start gap-3">
-        <span className="text-lg flex-shrink-0 mt-0.5">{styles.icon}</span>
-        <div>
-          {title && (
-            <p className={`font-bold ${styles.title} mb-1 text-sm`}>{title}</p>
-          )}
-          <div className={`text-sm leading-relaxed ${styles.body}`}>
-            {children}
-          </div>
-        </div>
+    <div className={`${styles.wrap} border rounded-xl p-5 my-6 blog-callout`}>
+      {/* Header row: icon + title */}
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className={`${styles.iconColor} shrink-0`} size={16} />
+        {title && (
+          <p className={`font-bold ${styles.title} text-sm m-0`}>{title}</p>
+        )}
+      </div>
+      {/* Content — no left indent */}
+      <div className={`text-sm leading-relaxed  ${styles.body}`}>
+        {children}
       </div>
     </div>
   );

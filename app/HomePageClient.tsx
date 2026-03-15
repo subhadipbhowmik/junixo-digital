@@ -114,7 +114,7 @@ function HeroSection() {
               style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.1s" }}
             >
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">Full-Service Digital Marketing Agency</span>
+              <span className="text-orange-600 text-xs font-bold uppercase tracking-widest">HimDigitally Marketing Agency</span>
             </div>
             <h1
               className="text-4xl sm:text-5xl lg:text-[56px] font-black text-gray-900 leading-[1.08] tracking-tight mb-6"
@@ -146,7 +146,7 @@ function HeroSection() {
               style={{ opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.5s" }}
             >
               <Link href="/get-a-quote" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-7 py-3.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:shadow-xl hover:-translate-y-0.5">
-                Get Your Free Digital Growth Strategy <ArrowRight size={16} />
+                Get Free Strategy <ArrowRight size={16} />
               </Link>
               <Link href="/portfolio" className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-orange-400 text-gray-700 hover:text-orange-500 font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:-translate-y-0.5">
                 View Our Work
@@ -345,7 +345,7 @@ const coreTechServices = [
     title: "Digital Marketing Services",
     desc: "Drive predictable, measurable growth with data-backed digital marketing services. From Google Ads and paid social to email automation and influencer campaigns - we build full-funnel performance marketing strategies that convert traffic into revenue and scale what works.",
     technologies: ["Meta Ads", "Google Ads", "TikTok Ads", "LinkedIn Ads", "HubSpot", "Mailchimp", "Klaviyo", "ActiveCampaign", "Hootsuite", "Buffer", "Canva", "Semrush"],
-    ctaLabel: "Explore Digital Marketing Services",
+    ctaLabel: "View Marketing Solutions",
     ctaHref: "/services/digital-marketing",
     color: "orange",
   },
@@ -357,7 +357,7 @@ const coreTechServices = [
     title: "SEO Services",
     desc: "Dominate search engine rankings with enterprise-grade SEO services. Our technical SEO audits, content strategies, and high-authority link building compound month over month - delivering lasting organic search visibility and measurable traffic growth for your business.",
     technologies: ["Ahrefs", "SEMrush", "Moz Pro", "Screaming Frog", "Google Search Console", "Google Analytics 4", "Surfer SEO", "Clearscope", "Majestic", "BrightLocal", "Yoast SEO", "Schema.org"],
-    ctaLabel: "Explore SEO Services and Growth Strategies",
+    ctaLabel: "Explore SEO Services",
     ctaHref: "/services/seo",
     color: "blue",
   },
@@ -369,7 +369,7 @@ const coreTechServices = [
     title: "Web Development Services",
     desc: "We deliver custom web development services using Next.js, React, and Shopify - building lightning-fast, conversion-optimised websites and web applications. Every project is engineered for performance, scalability, and measurable business results from day one.",
     technologies: ["React", "Next.js", "TypeScript", "Node.js", "WordPress", "Shopify", "WooCommerce", "Webflow", "Tailwind CSS", "PostgreSQL", "Supabase", "AWS"],
-    ctaLabel: "Explore Web Development Services",
+    ctaLabel: "View Web Services",
     ctaHref: "/services/web-development",
     color: "emerald",
   },
@@ -381,7 +381,7 @@ const coreTechServices = [
     title: "Mobile App Development Services",
     desc: "Launch high-performance iOS and Android applications with our mobile app development services. From rapid MVP builds to full-scale enterprise apps, we deliver intuitive, feature-rich mobile experiences using React Native and Flutter - built to grow with your business.",
     technologies: ["React Native", "Flutter", "Swift", "Kotlin", "Firebase", "Supabase", "Expo", "App Store Connect", "Google Play Console", "RevenueCat", "OneSignal", "Stripe"],
-    ctaLabel: "Explore App Development Services",
+    ctaLabel: "Explore App Services",
     ctaHref: "/services/app-development",
     color: "purple",
   },
@@ -780,7 +780,7 @@ function WhyChooseSection() {
               ))}
             </div>
             <Link href="/about/why-us" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5">
-              Discover Our Digital Growth Approach <ArrowRight size={16} />
+              Our Growth Approach <ArrowRight size={16} />
             </Link>
           </FadeIn>
         </div>
@@ -935,7 +935,7 @@ function WhySEOSection() {
               href="/services/seo"
               className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-orange-200 hover:-translate-y-0.5"
             >
-              Explore Our SEO Services and Growth Strategies <ArrowRight size={16} />
+             Unlock SEO Growth <ArrowRight size={16} />
             </Link>
           </FadeIn>
 
@@ -1410,7 +1410,7 @@ function AuditCTASection() {
           <div className="bg-orange-50 rounded-3xl border border-orange-100 overflow-hidden shadow-sm">
             <div className="grid lg:grid-cols-2">
               <div className="p-8 sm:p-10 lg:p-14">
-                <span className="inline-block text-orange-600 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-6 border border-orange-200">Free Digital Strategy Consultation</span>
+                <span className="inline-block text-orange-600 text-xs font-bold uppercase tracking-widest bg-orange-100 px-4 py-1.5 rounded-full mb-6 border border-orange-200">Free Strategy Consult</span>
                 <h2 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-4">
                   Ready to Grow Your Business with <span className="text-orange-500">Expert Digital Marketing?</span>
                 </h2>
@@ -1484,7 +1484,7 @@ function AuditCTASection() {
                         {errors.message && <p className="mt-1 text-xs text-red-500">{errors.message}</p>}
                       </div>
                       <button type="submit" disabled={loading} className="cursor-pointer w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-orange-200 hover:shadow-lg mt-1">
-                        {loading ? (<><Loader2 size={16} className="animate-spin" />Sending…</>) : <>Get My Free Digital Growth Strategy <ArrowRight size={16} /></>}
+                        {loading ? (<><Loader2 size={16} className="animate-spin" />Sending…</>) : <>Get Growth Strategy <ArrowRight size={16} /></>}
                       </button>
                       <p className="text-center text-xs text-gray-400 pt-1">No commitment - Free 30-min consultation - Response within 24 hrs</p>
                     </form>
